@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "SignalR Persistent Connection";
+}
+<hgroup>
+    <h2>@ViewBag.Title.</h2>
+    <h3>@ViewBag.Message</h3>
+</hgroup>
+<div>
+    <ul id="Messages"></ul>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jquery.signalR")
+    <script src="~/Scripts/AuthorizeEcho.js"></script>
+}
