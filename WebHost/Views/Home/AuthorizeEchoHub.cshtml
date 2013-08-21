@@ -1,0 +1,21 @@
+﻿@{
+    ViewBag.Title = "SignalR Hub";
+}
+<hgroup>
+    <h2>@ViewBag.Title.</h2>
+    <h3>@ViewBag.Message</h3>
+</hgroup>
+<div>
+    <ul id="Messages"></ul>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jquery.signalR")
+    <script src="~/signalr/hubs"></script>
+    <script src="~/Scripts/AuthorizeEchoHub.js"></script>
+    <script>
+        $(function () {
+            startSignalR();
+        });
+    </script>
+}

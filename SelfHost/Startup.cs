@@ -1,10 +1,6 @@
 ﻿using Common.Connections;
-using Microsoft.AspNet.SignalR;
 using Microsoft.Owin.Security.Cookies;
 using Owin;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,9 +17,9 @@ namespace SelfHost
             options.LogoutPath = CookieAuthenticationDefaults.LogoutPath;            
 
             app.UseCookieAuthentication(options);
-            app.UseStaticFiles();
-            app.MapConnection<AuthorizeEchoConnection>("/echo");
-            app.MapHubs();
+            app.UseStaticFiles("..\\..");
+            app.MapSignalR<AuthorizeEchoConnection>("/echo");
+            app.MapSignalR();
             app.Use((context, next) =>
             {
                 if(context.Request.Path.Value.Contains(options.LoginPath.Value))

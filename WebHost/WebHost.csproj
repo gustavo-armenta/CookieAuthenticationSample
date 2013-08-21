@@ -155,11 +155,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SelfHost\Connections\AuthorizeEchoConnection.cs">
+      <Link>Connections\AuthorizeEchoConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\SelfHost\Hubs\AuthorizeEchoHub.cs">
+      <Link>Hubs\AuthorizeEchoHub.cs</Link>
+    </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
-    <Compile Include="Connections\AuthorizeEchoConnection.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
@@ -180,7 +185,8 @@
     <Content Include="Content\Site.css" />
     <Content Include="img\glyphicons-halflings-white.png" />
     <Content Include="img\glyphicons-halflings.png" />
-    <Content Include="Scripts\AuthorizeEcho.js" />
+    <Content Include="Scripts\AuthorizeEchoConnection.js" />
+    <Content Include="Scripts\AuthorizeEchoHub.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
@@ -219,7 +225,8 @@
     <Content Include="Views\Account\Manage.cshtml" />
     <Content Include="Views\Account\Register.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
-    <Content Include="Views\Home\AuthorizeEcho.cshtml" />
+    <Content Include="Views\Home\AuthorizeEchoConnection.cshtml" />
+    <Content Include="Views\Home\AuthorizeEchoHub.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

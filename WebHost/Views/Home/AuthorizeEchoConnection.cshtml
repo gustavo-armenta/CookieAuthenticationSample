@@ -11,5 +11,10 @@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jquery.signalR")
-    <script src="~/Scripts/AuthorizeEcho.js"></script>
+    <script src="~/Scripts/AuthorizeEchoConnection.js"></script>
+    <script>
+        $(function () {
+            startSignalR();
+        });
+    </script>
 }

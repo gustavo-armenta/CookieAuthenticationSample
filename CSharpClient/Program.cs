@@ -13,7 +13,7 @@ namespace CSharpClient
     {
         static void Main(string[] args)
         {
-            string url = "http://localhost.fiddler:8080/";
+            string url = "http://localhost:8080/";
 
             Program program = new Program();
             program.RunAsync(url).Wait();
@@ -39,27 +39,41 @@ namespace CSharpClient
                 content = await response.Content.ReadAsStringAsync();
                 requestVerificationToken = ParseRequestVerificationToken(content);
 
-                var connection = new Connection(url + "echo");
-                connection.CookieContainer = handler.CookieContainer;
-                connection.TraceWriter = _traceWriter;
-                connection.Received += (data) => connection.TraceWriter.WriteLine("Received: " + data);
-                connection.Error += (exception) => connection.TraceWriter.WriteLine(string.Format("Error: {0}: {1}" + exception.GetType(), exception.Message));
-                connection.TransportConnectTimeout = TimeSpan.FromSeconds(10);
-                await connection.Start(new LongPollingTransport());
-                await connection.Send("sending to AuthorizeEchoConnection");
+                await RunPersistentConnection(url, httpClient, handler.CookieContainer, requestVerificationToken);
+                await RunHub(url, httpClient, handler.CookieContainer, requestVerificationToken);
 
                 response = await httpClient.PostAsync(url + "Account/LogOff", new StringContent(requestVerificationToken, Encoding.UTF8, "application/x-www-form-urlencoded"));
                 response = await httpClient.PostAsync(url + "Account/Logout", new StringContent(requestVerificationToken, Encoding.UTF8, "application/x-www-form-urlencoded"));
-                _traceWriter.WriteLine("Response.StatusCode: " + response.StatusCode);
+            }
+        }
 
-                try
-                {
-                    await connection.Send("sending must fail because of signout");
-                }
-                catch(Exception e)
-                {
-                    Console.WriteLine("sending failed as expected with error: {0}", e);
-                }
+        private async Task RunPersistentConnection(string url, HttpClient httpClient, CookieContainer cookieContainer, string requestVerificationToken)
+        {
+            using (var connection = new Connection(url + "echo"))
+            {
+                connection.CookieContainer = cookieContainer;
+                connection.TraceWriter = _traceWriter;
+                connection.Received += (data) => connection.TraceWriter.WriteLine("Received: " + data);
+                connection.Error += (exception) => connection.TraceWriter.WriteLine(string.Format("Error: {0}: {1}" + exception.GetType(), exception.Message));
+                await connection.Start(new LongPollingTransport());
+                await connection.Send("sending to AuthorizeEchoConnection");
+            }
+        }
+
+        private async Task RunHub(string url, HttpClient httpClient, CookieContainer cookieContainer, string requestVerificationToken)
+        {
+            using (var connection = new HubConnection(url))
+            {
+                connection.CookieContainer = cookieContainer;
+                connection.TraceWriter = _traceWriter;
+                connection.Received += (data) => connection.TraceWriter.WriteLine("Received: " + data);
+                connection.Error += (exception) => connection.TraceWriter.WriteLine(string.Format("Error: {0}: {1}" + exception.GetType(), exception.Message));
+
+                var authorizeEchoHub = connection.CreateHubProxy("AuthorizeEchoHub");
+                authorizeEchoHub.On<string>("hubReceived", (data) => connection.TraceWriter.WriteLine("HubReceived: " + data));
+
+                await connection.Start(new LongPollingTransport());
+                await authorizeEchoHub.Invoke("echo", "sending to AuthorizeEchoHub");
             }
         }
 

@@ -59,14 +59,8 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AuthorizeEcho.html" />
-    <Content Include="packages.config" />
-    <None Include="Scripts\jquery-1.8.2.intellisense.js" />
-    <Content Include="Scripts\AuthorizeEcho.js" />
-    <Content Include="Scripts\jquery-1.8.2.js" />
-    <Content Include="Scripts\jquery-1.8.2.min.js" />
-    <Content Include="Scripts\jquery.signalR-2.0.0-rtm1-130820-b159.js" />
-    <Content Include="Scripts\jquery.signalR-2.0.0-rtm1-130820-b159.min.js" />
+    <Content Include="AuthorizeEchoHub.html" />
+    <Content Include="AuthorizeEchoConnection.html" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
