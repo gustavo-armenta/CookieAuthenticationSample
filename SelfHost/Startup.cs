@@ -22,7 +22,7 @@ namespace SelfHost
             app.MapSignalR();
             app.Use((context, next) =>
             {
-                if(context.Request.Path.Value.Contains(options.LoginPath.Value))
+                if(context.Request.Path.Contains(options.LoginPath))
                 {
                     if (context.Request.Method == "GET")
                     {
@@ -55,7 +55,7 @@ namespace SelfHost
                         return Task.FromResult<object>(null);
                     }
                 }
-                else if (context.Request.Path.Value.Contains(options.LogoutPath.Value))
+                else if (context.Request.Path.Contains(options.LogoutPath))
                 {
                     context.Authentication.SignOut(options.AuthenticationType);
                     return Task.FromResult<object>(null);

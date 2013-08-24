@@ -1,46 +1,9 @@
 ﻿/// <reference path="jquery.signalR-2.0.0-rc1.js" />
-
-function writeEvent(line) {
-    var messages = $("#Messages");
-    messages.append("<li style='color:blue;'>" + line + "</li>");
-}
-
-function writeError(line) {
-    var messages = $("#Messages");
-    messages.append("<li style='color:red;'>" + line + "</li>");
-}
-
-function writeLine(line) {
-    var messages = $("#Messages");
-    messages.append("<li style='color:black;'>" + line + "</li>");
-}
-
-function printState(state) {
-    var messages = $("#Messages");
-    return ["connecting", "connected", "reconnecting", state, "disconnected"][state];
-}
-
-function login() {
-    $.get("http://localhost:8080/Account/Login")
-        .done(function (response) {
-            writeLine("login.get.done");
-            var requestVerificationToken = "__RequestVerificationToken=" + $("input[name='__RequestVerificationToken']", $(response)).val();
-            var data = requestVerificationToken + "&UserName=user&Password=password&RememberMe=false";
-            $.post("http://localhost:8080/Account/Login", data)
-                .done(function (response) {
-                    writeLine("login.post.done");
-                    var requestVerificationToken = "__RequestVerificationToken=" + $("input[name='__RequestVerificationToken']", $(response)).val();
-                })
-                .fail(function (error) {
-                    writeError("login.post.fail " + error);
-                });
-        })
-        .fail(function (error) {
-            writeError("login.get.fail " + error);
-        });
-}
+/// <reference path="common.js" />
 
 function startSignalR() {
+    var activeTransport = getQueryVariable('transport') || 'auto';
+
     var connection = $.connection.hub;
     connection.url = "http://localhost:8080/signalr";
     var authorizeEchoHub = $.connection.authorizeEchoHub;
@@ -88,7 +51,7 @@ function startSignalR() {
         writeLine("hubReceived: " + data);
     }
 
-    connection.start({ transport: "longPolling" })
+    connection.start({ transport: activeTransport })
         .done(function () {
             writeLine("start.done");
             authorizeEchoHub.server.echo("sending to AuthorizeEchoHub");

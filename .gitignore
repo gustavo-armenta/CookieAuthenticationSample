@@ -1,3 +1,5 @@
 [Oo]bj/
 [Bb]in/
+*.suo
 packages/
+WebHost/App_Data/
