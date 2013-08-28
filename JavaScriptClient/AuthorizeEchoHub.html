@@ -9,8 +9,7 @@
     <script src="http://localhost:8080/Scripts/AuthorizeEchoHub.js"></script>
     <script>
         $(function () {
-            login();
-            startSignalR();
+            login(startSignalR, function () { alert("login failed");});
         });
     </script>
 </head>

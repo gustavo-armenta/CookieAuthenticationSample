@@ -32,7 +32,7 @@ function getQueryVariable(variable) {
     }
 }
 
-function login() {
+function login(callbackSuccess, callbackFail) {
     $.get("http://localhost:8080/Account/Login")
         .done(function (response) {
             writeLine("login.get.done");
@@ -42,12 +42,15 @@ function login() {
                 .done(function (response) {
                     writeLine("login.post.done");
                     var requestVerificationToken = "__RequestVerificationToken=" + $("input[name='__RequestVerificationToken']", $(response)).val();
+                    callbackSuccess();
                 })
                 .fail(function (error) {
                     writeError("login.post.fail " + error);
+                    callbackFail();
                 });
         })
         .fail(function (error) {
             writeError("login.get.fail " + error);
+            callbackFail();
         });
 }

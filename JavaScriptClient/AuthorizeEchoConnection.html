@@ -8,8 +8,7 @@
     <script src="http://localhost:8080/Scripts/AuthorizeEchoConnection.js"></script>
     <script>
         $(function () {
-            login();
-            startSignalR();
+            login(startSignalR, function () { alert("login failed"); });
         });
     </script>
 </head>
