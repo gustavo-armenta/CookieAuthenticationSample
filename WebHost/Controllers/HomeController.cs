@@ -27,6 +27,7 @@ namespace WebHost.Controllers
             return View();
         }
 
+        [Authorize]
         public ActionResult AuthorizeEchoConnection()
         {
             ViewBag.Message = "Only an authenticated user can connect to this Persistent Connection.";
@@ -34,6 +35,7 @@ namespace WebHost.Controllers
             return View();
         }
 
+        [Authorize]
         public ActionResult AuthorizeEchoHub()
         {
             ViewBag.Message = "Only an authenticated user can connect to this Hub.";

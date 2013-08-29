@@ -45,6 +45,9 @@
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.0.0-rc1\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Owin.Cors">
+      <HintPath>..\packages\Microsoft.Owin.Cors.2.0.0-rc1\lib\net45\Microsoft.Owin.Cors.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -52,6 +55,9 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Cors">
+      <HintPath>..\packages\Microsoft.AspNet.Cors.5.0.0-rc1\lib\net45\System.Web.Cors.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -176,6 +182,15 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\SelfHost\Scripts\AuthorizeEchoConnection.js">
+      <Link>Scripts\AuthorizeEchoConnection.js</Link>
+    </Content>
+    <Content Include="..\SelfHost\Scripts\AuthorizeEchoHub.js">
+      <Link>Scripts\AuthorizeEchoHub.js</Link>
+    </Content>
+    <Content Include="..\SelfHost\Scripts\Common.js">
+      <Link>Scripts\Common.js</Link>
+    </Content>
     <Content Include="Content\bootstrap-responsive.css" />
     <Content Include="Content\bootstrap-responsive.min.css" />
     <Content Include="Content\bootstrap.css" />
@@ -185,12 +200,9 @@
     <Content Include="Content\Site.css" />
     <Content Include="img\glyphicons-halflings-white.png" />
     <Content Include="img\glyphicons-halflings.png" />
-    <Content Include="Scripts\AuthorizeEchoConnection.js" />
-    <Content Include="Scripts\AuthorizeEchoHub.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
-    <Content Include="Scripts\Common.js" />
     <Content Include="Scripts\jquery-1.8.2.js" />
     <Content Include="Scripts\jquery-1.8.2.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
@@ -264,6 +276,11 @@
     </VisualStudio>
   </ProjectExtensions>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="BeforeBuild">
+    <Copy ContinueOnError="true" SkipUnchangedFiles="true" SourceFiles="$(SolutionDir)\SelfHost\Scripts\Common.js" DestinationFolder="Scripts" />
+    <Copy ContinueOnError="true" SkipUnchangedFiles="true" SourceFiles="$(SolutionDir)\SelfHost\Scripts\AuthorizeEchoConnection.js" DestinationFolder="Scripts" />
+    <Copy ContinueOnError="true" SkipUnchangedFiles="true" SourceFiles="$(SolutionDir)\SelfHost\Scripts\AuthorizeEchoHub.js" DestinationFolder="Scripts" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

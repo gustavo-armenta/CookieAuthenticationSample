@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="Content/bootstrap.css" rel="stylesheet" />
+    <script src="http://localhost:8080/Scripts/jquery-1.8.2.js"></script>
+    <script src="Scripts/bootstrap.js"></script>
+    <script src="http://localhost:8080/Scripts/Common.js"></script>
+    <script>
+        $(function () {
+            updateLoginForm();
+        });
+    </script>
+</head>
+<body>
+    <div id="loginPage">
+        <hgroup>
+            <h2>Login.</h2>
+            <h3>Login to SignalR Server using Cross-Domain.</h3>
+        </hgroup>
+        <form id="loginForm">
+            <input name="__RequestVerificationToken" type="hidden" value="" />
+            <fieldset class="form-horizontal">
+                <div class="control-group">
+                    <label class="control-label" for="UserName">User name</label>
+                    <div class="controls">
+                        <input data-val="true" data-val-required="The User name field is required." id="UserName" name="UserName" type="text" value="" />
+                        <span class="field-validation-valid help-inline" data-valmsg-for="UserName" data-valmsg-replace="true"></span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="Password">Password</label>
+                    <div class="controls">
+                        <input data-val="true" data-val-required="The Password field is required." id="Password" name="Password" type="password" />
+                        <span class="field-validation-valid help-inline" data-valmsg-for="Password" data-valmsg-replace="true"></span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <label class="checkbox">
+                            <input data-val="true" data-val-required="The Remember me? field is required." id="RememberMe" name="RememberMe" type="checkbox" value="true" /><input name="RememberMe" type="hidden" value="false" />
+                            <label for="RememberMe">Remember me?</label>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-actions no-color">
+                    <input type="button" id="loginButton" value="Log in" class="btn" disabled="disabled" onclick="postLoginForm()" />
+                </div>
+            </fieldset>
+        </form>
+    </div>
+    <div id="contentPage" style="display:none">
+        <hgroup>
+            <h2>Logged in to SignalR server.</h2>
+            <h2>Select PersistentConnection or Hub Sample.</h2>
+        </hgroup>
+        <p><a href="AuthorizeEchoConnection.html">AuthorizeEchoConnection.html</a></p>
+        <p><a href="AuthorizeEchoHub.html">AuthorizeEchoHub.html</a></p>
+    </div>
+    <ul id="Messages"></ul>
+</body>
+</html>

@@ -54,6 +54,7 @@ function startSignalR() {
     connection.start({ transport: activeTransport })
         .done(function () {
             writeLine("start.done");
+            writeLine("transport=" + connection.transport.name);
             authorizeEchoHub.server.echo("sending to AuthorizeEchoHub");
         })
         .fail(function (error) {

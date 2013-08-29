@@ -32,22 +32,43 @@ function getQueryVariable(variable) {
     }
 }
 
-function login() {
-    $.get("http://localhost:8080/Account/Login")
-        .done(function (response) {
+function updateLoginForm() {
+    $.ajax({
+        url: "http://localhost:8080/Account/Login",
+        type: "GET",
+        xhrFields: { withCredentials: true },        
+        success: function (content) {
             writeLine("login.get.done");
-            var requestVerificationToken = "__RequestVerificationToken=" + $("input[name='__RequestVerificationToken']", $(response)).val();
-            var data = requestVerificationToken + "&UserName=user&Password=password&RememberMe=false";
-            $.post("http://localhost:8080/Account/Login", data)
-                .done(function (response) {
-                    writeLine("login.post.done");
-                    var requestVerificationToken = "__RequestVerificationToken=" + $("input[name='__RequestVerificationToken']", $(response)).val();
-                })
-                .fail(function (error) {
-                    writeError("login.post.fail " + error);
-                });
-        })
-        .fail(function (error) {
+            var requestVerificationToken = $("input[name='__RequestVerificationToken']", $(content)).val();
+            var requestVerificationTokenField = $("[name=__RequestVerificationToken]");
+            requestVerificationTokenField.val(requestVerificationToken);
+
+            $("#loginButton").removeAttr('disabled');
+        },
+        error: function (error) {
             writeError("login.get.fail " + error);
-        });
+        }
+    });
+}
+
+function postLoginForm() {
+    $.ajax({
+        url: "http://localhost:8080/Account/Login",
+        type: "POST",
+        data: $("#loginForm").serialize(),
+        xhrFields: { withCredentials: true },
+        success: function (content) {
+            writeLine("login.post.done");
+            var requestVerificationToken = $("input[name='__RequestVerificationToken']", $(content)).val();
+
+            var loginPage = $("#loginPage");
+            var contentPage = $("#contentPage");
+
+            loginPage.hide();
+            contentPage.show();
+        },
+        error: function (error) {
+            writeError("login.post.fail " + error);
+        }
+    });
 }

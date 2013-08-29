@@ -1,9 +1,12 @@
-﻿using Common.Connections;
-using Microsoft.Owin.Security.Cookies;
-using Owin;
+﻿using System;
+using System.IO;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Common.Connections;
+using Microsoft.Owin.Cors;
+using Microsoft.Owin.Security.Cookies;
+using Owin;
 
 namespace SelfHost
 {
@@ -11,15 +14,20 @@ namespace SelfHost
     {
         public void Configuration(IAppBuilder app)
         {
-            var options = new CookieAuthenticationOptions();
-            options.AuthenticationType = CookieAuthenticationDefaults.AuthenticationType;
-            options.LoginPath = CookieAuthenticationDefaults.LoginPath;
-            options.LogoutPath = CookieAuthenticationDefaults.LogoutPath;            
+            app.UseCors(CorsOptions.AllowAll);
+
+            string contentPath = Path.Combine(Environment.CurrentDirectory, @"..\..");
+            app.UseStaticFiles(contentPath);
+
+            var options = new CookieAuthenticationOptions()
+            {
+                AuthenticationType = CookieAuthenticationDefaults.AuthenticationType,
+                LoginPath = CookieAuthenticationDefaults.LoginPath,
+                LogoutPath = CookieAuthenticationDefaults.LogoutPath,
+            };
 
             app.UseCookieAuthentication(options);
-            app.UseStaticFiles("..\\..");
-            app.MapSignalR<AuthorizeEchoConnection>("/echo");
-            app.MapSignalR();
+           
             app.Use((context, next) =>
             {
                 if(context.Request.Path.Contains(options.LoginPath))
@@ -63,6 +71,9 @@ namespace SelfHost
 
                 return next.Invoke();
             });
+
+            app.MapSignalR<AuthorizeEchoConnection>("/echo");
+            app.MapSignalR();
         }
     }
 }
