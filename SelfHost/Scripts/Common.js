@@ -2,22 +2,36 @@
 
 function writeEvent(line) {
     var messages = $("#Messages");
-    messages.append("<li style='color:blue;'>" + line + "</li>");
+    messages.append("<li style='color:blue;'>" + getTimeString() + ' ' + line + "</li>");
 }
 
 function writeError(line) {
     var messages = $("#Messages");
-    messages.append("<li style='color:red;'>" + line + "</li>");
+    messages.append("<li style='color:red;'>" + getTimeString() + ' ' + line + "</li>");
 }
 
 function writeLine(line) {
     var messages = $("#Messages");
-    messages.append("<li style='color:black;'>" + line + "</li>");
+    messages.append("<li style='color:black;'>" + getTimeString() + ' ' + line + "</li>");
 }
 
 function printState(state) {
     var messages = $("#Messages");
     return ["connecting", "connected", "reconnecting", state, "disconnected"][state];
+}
+
+function getTimeString() {
+    var currentTime = new Date();
+    var month = currentTime.getMonth() + 1;
+    var day = currentTime.getDate();
+    var year = currentTime.getFullYear();
+    var hours = currentTime.getHours();
+    var minutes = currentTime.getMinutes();
+    if (minutes < 10) {
+        minutes = "0" + minutes;
+    }
+
+    return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
 }
 
 function getQueryVariable(variable) {
