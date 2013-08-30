@@ -90,7 +90,320 @@ SelfHost walkthrough
 3. Run SelfHost.exe
 4. Repeat JavaScript Client walkthrough and CSharpClient walkthrough
 
+Code walkthrough
+==
+SelfHost\Connections\AuthorizeEchoConnection.cs
+-
+AuthorizeEchoConnection class inherits PersistentConnection and make sure override AuthorizeRequest to implement SignalR authorization for persistent connection 
+
+	using Microsoft.AspNet.SignalR;
+	using System.Threading.Tasks;
+	
+	namespace Common.Connections
+	{
+	    public class AuthorizeEchoConnection : PersistentConnection
+	    {
+	        protected override bool AuthorizeRequest(IRequest request)
+	        {
+	            return request.User != null && request.User.Identity.IsAuthenticated;
+	        }
+	
+	        protected override Task OnReceived(IRequest request, string connectionId, string data)
+	        {
+	            return Connection.Send(connectionId, data);
+	        }
+	
+	        protected override Task OnConnected(IRequest request, string connectionId)
+	        {
+	            return Connection.Send(connectionId, "Welcome " + request.User.Identity.Name + "!");
+	        }
+	    }
+	}
+SelfHost\Hubs\AuthorizeEchoHub.cs
+-
+Attribute Authorize (Microsoft.AspNet.SignalR.AuthorizeAttribute) can be used to authorize hubs
+
+	using Microsoft.AspNet.SignalR;
+	using System.Threading.Tasks;
+	
+	namespace Common.Hubs
+	{
+	    [Authorize]
+	    public class AuthorizeEchoHub : Hub
+	    {
+	        public override Task OnConnected()
+	        {
+	            return Clients.Caller.hubReceived("Welcome " + Context.User.Identity.Name + "!");
+	        }
+	
+	        public void Echo(string value)
+	        {
+	            Clients.Caller.hubReceived(value);
+	        }
+	    }
+	}
+
+Webhost\startup.cs
+--
+Note app.UseCors to allow cross origin message for all the requests in this website.  Use it with caution.  
+
+	using Common.Connections;
+	using Microsoft.Owin;
+	using Microsoft.Owin.Cors;
+	using Owin;
+	
+	[assembly: OwinStartupAttribute(typeof(WebHost.Startup))]
+	namespace WebHost
+	{
+	    public partial class Startup 
+	    {
+	        public void Configuration(IAppBuilder app) 
+	        {
+	            app.UseCors(CorsOptions.AllowAll);
+	            ConfigureAuth(app);
+	
+	            app.MapSignalR<AuthorizeEchoConnection>("/echo");
+	            app.MapSignalR();
+	        }
+	    }
+	}
+
+SelfHost\Program.cs
+--
+We use Owin host package to create our console process, which uses WebApp.Start to initiate the self host and listen to locahost:8080.
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            using (WebApp.Start<Startup>("http://localhost:8080/"))
+            {
+                Console.WriteLine("Server running at http://localhost:8080/");
+                Console.ReadLine();
+            }
+        }
+    }
+
+SelfHost\Startup.cs
+--
+We use OWIN static file extension middleware package (still in development as of 10/2013) here to serve static html file in addition to WebApi and SignalR that is supported by OWIN self host.
+
+    public class Startup
+    {
+        public void Configuration(IAppBuilder app)
+        {
+            app.UseCors(CorsOptions.AllowAll);
+
+            string contentPath = Path.Combine(Environment.CurrentDirectory, @"..\..");
+            app.UseStaticFiles(contentPath);
+
+            var options = new CookieAuthenticationOptions()
+            {
+                AuthenticationType = CookieAuthenticationDefaults.AuthenticationType,
+                LoginPath = CookieAuthenticationDefaults.LoginPath,
+                LogoutPath = CookieAuthenticationDefaults.LogoutPath,
+            };
+
+            app.UseCookieAuthentication(options);
+
+We insert our middle ware to the OWIN pipe line to intercept login/logout calls and determine authentication.
+
+            app.Use((context, next) =>
+            {
+                if(context.Request.Path.Contains(options.LoginPath))
+                {
+                    if (context.Request.Method == "GET")
+                    {
+                        byte[] bytes = Encoding.UTF8.GetBytes("<input name=\"__RequestVerificationToken\" type=\"hidden\" value=\"0\" />");
+                        context.Response.ContentLength = bytes.LongLength;
+                        context.Response.ContentType = "text/html";
+                        context.Response.Body.Write(bytes, 0, bytes.Length);
+                        return Task.FromResult<object>(null);
+                    }
+                    else
+                    {
+                        var form = context.Request.ReadFormAsync().Result;
+                        var userName = form.Get("UserName");
+                        var password = form.Get("Password");
+
+SelfHost/Scripts/Common.js
+--
+We use Javascript code to perform get login form and post our login cross domain for JavaScriptClient index.html login form. 
+
+	function updateLoginForm() {
+	    $.ajax({
+	        url: "http://localhost:8080/Account/Login",
+	        type: "GET",
+	        xhrFields: { withCredentials: true },        
+	        success: function (content) {
+	            writeLine("login.get.done");
+	            var requestVerificationToken = $("input[name='__RequestVerificationToken']", $(content)).val();
+	            var requestVerificationTokenField = $("[name=__RequestVerificationToken]");
+	            requestVerificationTokenField.val(requestVerificationToken);
+	
+	            $("#loginButton").removeAttr('disabled');
+	        },
+	        error: function (error) {
+	            writeError("login.get.fail " + error);
+	        }
+	    });
+	}
+	
+	function postLoginForm() {
+	    $.ajax({
+	        url: "http://localhost:8080/Account/Login",
+	        type: "POST",
+	        data: $("#loginForm").serialize(),
+	        xhrFields: { withCredentials: true },
+	        success: function (content) {
+	            writeLine("login.post.done");
+	            var requestVerificationToken = $("input[name='__RequestVerificationToken']", $(content)).val();
+	
+	            var loginPage = $("#loginPage");
+	            var contentPage = $("#contentPage");
+	
+	            loginPage.hide();
+	            contentPage.show();
+	        },
+	        error: function (error) {
+	            writeError("login.post.fail " + error);
+	        }
+	    });
+	}
+
+SelfHost\Scripts\AuthorizeEchoConnection.js and AuthorizeEchoHub.js
+--
+These 2 JavaScipt files defines the SignalR operation and events, including connection, disconnection, reconnect, stateChanged events.
+
+
+    connection.connectionSlow(function () {
+        writeEvent("connectionSlow");
+    });
+
+    connection.disconnected(function () {
+        writeEvent("disconnected");
+    });
+
+    connection.error(function (error) {
+        var innerError = error;
+        var message = "";
+        while (innerError) {
+            message += " Message=" + innerError.message + " Stack=" + innerError.stack;
+            innerError = innerError.source
+        }
+        writeError("Error: " + message);
+    });
+
+    connection.reconnected(function () {
+        writeEvent("reconnected");
+    });
+
+    connection.reconnecting(function () {
+        writeEvent("reconnecting");
+    });
+
+    connection.starting(function () {
+        writeEvent("starting");
+    });
+
+    connection.received(function (data) {
+        writeLine("received: " + connection.json.stringify(data));
+    });
+
+    connection.stateChanged(function (change) {
+        writeEvent("stateChanged: " + printState(change.oldState) + " => " + printState(change.newState));
+    });
+
+    authorizeEchoHub.client.hubReceived = function (data) {
+        writeLine("hubReceived: " + data);
+    }
+
+CSharpClient\Program.cs
+--
+RunAsync function defines how we can use HttpClient, CookieContainer to login and get the verification cookie. 
+
+
+        private static IClientTransport GetClientTransport()
+        {
+            return new AutoTransport(new DefaultHttpClient());            
+        }
+
+        private async Task RunAsync(string url)
+        {
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.CookieContainer = new CookieContainer();
+
+            using (var httpClient = new HttpClient(handler))
+            {
+                var loginUrl = url + "Account/Login";
+
+                _traceWriter.WriteLine("Sending http GET to {0}", loginUrl);
+                var response = await httpClient.GetAsync(loginUrl);
+                var content = await response.Content.ReadAsStringAsync();
+                var requestVerificationToken = ParseRequestVerificationToken(content);
+                content = requestVerificationToken + "&UserName=user&Password=password&RememberMe=false";
+
+                _traceWriter.WriteLine("Sending http POST to {0}", loginUrl);
+                response = await httpClient.PostAsync(loginUrl, new StringContent(content, Encoding.UTF8, "application/x-www-form-urlencoded"));
+                content = await response.Content.ReadAsStringAsync();
+                requestVerificationToken = ParseRequestVerificationToken(content);
+
+                await RunPersistentConnection(url, httpClient, handler.CookieContainer, requestVerificationToken);
+                await RunHub(url, httpClient, handler.CookieContainer, requestVerificationToken);
+
+                _traceWriter.WriteLine();
+                _traceWriter.WriteLine("Sending http POST to {0}", url + "Account/LogOff");
+                response = await httpClient.PostAsync(url + "Account/LogOff", new StringContent(requestVerificationToken, Encoding.UTF8, "application/x-www-form-urlencoded"));
+
+                _traceWriter.WriteLine("Sending http POST to {0}", url + "Account/Logout");
+                response = await httpClient.PostAsync(url + "Account/Logout", new StringContent(requestVerificationToken, Encoding.UTF8, "application/x-www-form-urlencoded"));
+            }
+        }
+
+RunPersistentConnection and RunHub function demonstrates how to use the cookieContainer to run authenticated signalR functions
+
+
+        private async Task RunPersistentConnection(string url, HttpClient httpClient, CookieContainer cookieContainer, string requestVerificationToken)
+        {
+            _traceWriter.WriteLine();
+            _traceWriter.WriteLine("*** Persistent Connection ***");
+
+            using (var connection = new Connection(url + "echo"))
+            {
+                connection.CookieContainer = cookieContainer;
+                connection.TraceWriter = _traceWriter;
+                connection.Received += (data) => connection.TraceWriter.WriteLine("Received: " + data);
+                connection.Error += (exception) => connection.TraceWriter.WriteLine(string.Format("Error: {0}: {1}" + exception.GetType(), exception.Message));
+                await connection.Start(GetClientTransport());
+                await connection.Send("sending to AuthorizeEchoConnection");
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
+        }
+
+        private async Task RunHub(string url, HttpClient httpClient, CookieContainer cookieContainer, string requestVerificationToken)
+        {
+            _traceWriter.WriteLine();
+            _traceWriter.WriteLine("*** Hub ***");
+
+            using (var connection = new HubConnection(url))
+            {
+                connection.CookieContainer = cookieContainer;
+                connection.TraceWriter = _traceWriter;
+                connection.Received += (data) => connection.TraceWriter.WriteLine("Received: " + data);
+                connection.Error += (exception) => connection.TraceWriter.WriteLine(string.Format("Error: {0}: {1}" + exception.GetType(), exception.Message));
+
+                var authorizeEchoHub = connection.CreateHubProxy("AuthorizeEchoHub");
+                authorizeEchoHub.On<string>("hubReceived", (data) => connection.TraceWriter.WriteLine("HubReceived: " + data));
+
+                await connection.Start(GetClientTransport());
+                await authorizeEchoHub.Invoke("echo", "sending to AuthorizeEchoHub");
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
+        }
+
 Summary
 ==
+This sample solution demos how we can make OWIN, SignalR, MVC, Authentication on different platforms to work together.  
+
 In real world applications, if many different different kind of clients wants to authorize to the server (e.g. windows store, windows phone, web page etc.), the server might be written using web API purely for authentication.  VS2013 SPA template shows a perfect example on how to do that using OWIN and WebAPI. Similar code can be written to make SignalR work with authentication in this kind situation as well. 
 
