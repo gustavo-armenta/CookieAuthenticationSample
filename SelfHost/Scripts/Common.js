@@ -22,20 +22,7 @@ function printState(state) {
 
 function getTimeString() {
     var currentTime = new Date();
-    var month = currentTime.getMonth() + 1;
-    var day = currentTime.getDate();
-    var year = currentTime.getFullYear();
-    var hours = currentTime.getHours();
-    var minutes = currentTime.getMinutes();
-    if (minutes < 10) {
-        minutes = "0" + minutes;
-    }
-    var seconds = currentTime.getSeconds();
-    if (seconds < 10) {
-        seconds = "0" + seconds;
-    }
-
-    return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes + ':' + seconds;
+    return currentTime.toTimeString();
 }
 
 function getQueryVariable(variable) {
@@ -50,104 +37,8 @@ function getQueryVariable(variable) {
     }
 }
 
-function updateLoginForm() {
-    $.ajax({
-        url: "http://localhost:8080/Account/Login",
-        type: "GET",
-        xhrFields: { withCredentials: true },        
-        success: function (content) {
-            writeLine("login.get.done");
-            var tokenInResponseContent = $("input[name='__RequestVerificationToken']", $(content));
-            if (tokenInResponseContent) {
-                var requestVerificationToken = tokenInResponseContent.val();
-                var tokenInFormInput = $("input[name=__RequestVerificationToken]");
-                tokenInFormInput.val(requestVerificationToken);
-            }
-
-            $("#loginButton").removeAttr('disabled');
-        },
-        error: function (error) {
-            writeError("login.get.fail " + error);
-        }
-    });
-}
-
 function postLoginForm() {
-    $.ajax({
-        url: "http://localhost:8080/Account/Login",
-        type: "POST",
-        data: $("#loginForm").serialize(),
-        xhrFields: { withCredentials: true },
-        success: function (content) {
-            writeLine("login.post.done");
-            var tokenInResponseContent = $("input[name='__RequestVerificationToken']", $(content)).val();
-            if (tokenInResponseContent) {
-                var tokenInFormInput = $("input[name='__RequestVerificationToken']");
-                tokenInFormInput.val(tokenInResponseContent);
-            }
-            
-            var domContent = $(content);
-            var loginError = $(".validation-summary-errors", domContent).text();
-            if (!loginError) {
-                loginError = $("ul#errors", domContent).text();
-            }
-
-            if (loginError) {
-                writeError(loginError);
-                return;
-            }
-
-            navigateTo("AuthorizeEchoConnection.html");
-        },
-        error: function (error) {
-            writeError("login.post.fail " + error);
-        }
-    });
-}
-
-function postLogoutForm() {
-    $.ajax({
-        url: "http://localhost:8080/Account/LogOff",
-        type: "POST",
-        data: $("#logoutForm").serialize(),
-        xhrFields: { withCredentials: true },
-        success: function (content) {
-            writeLine("logout.post.done");
-            navigateTo("index.html");
-        },
-        error: function (error) {
-            writeError("logout.post.fail " + error);
-
-            $.ajax({
-                url: "http://localhost:8080/Account/Logout",
-                type: "POST",
-                data: $("#logoutForm").serialize(),
-                xhrFields: { withCredentials: true },
-                success: function (content) {
-                    writeLine("logout.post.done");
-                    navigateTo("index.html");
-                },
-                error: function (error) {
-                    writeError("logout.post.fail " + error);
-                }
-            });
-        }
-    });
-}
-
-function setTokenInForm() {
-    var tokenInRequestQuery = getQueryVariable("__RequestVerificationToken");
-    var tokenInFormInput = $("input[name='__RequestVerificationToken']");
-    if (tokenInRequestQuery && tokenInFormInput) {
-        tokenInFormInput.val(tokenInRequestQuery);
-    }
-}
-
-function navigateTo(url) {
-    var queryString = "";
-    var tokenInFormInput = $("input[name='__RequestVerificationToken']");
-    if (tokenInFormInput) {
-        queryString = "?__RequestVerificationToken=" + tokenInFormInput.val();
-    }
-    window.location.href = url + queryString;
+    var loginForm = $("#loginForm");
+    loginForm.attr("action", "/Account/Login" + window.location.search);
+    loginForm.submit();
 }

@@ -11,22 +11,19 @@
     <script src="http://localhost:8080/Scripts/AuthorizeEchoConnection.js"></script>
     <script>
         $(function () {
-            setTokenInForm();
             startSignalR();
         });
     </script>
 </head>
 <body>
-    <form action="/Account/LogOff" class="navbar-form pull-right" id="logoutForm" method="post">
-        <input name="__RequestVerificationToken" type="hidden" value="" /> 
-    </form>
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-inner">
-            <div class="container">                <a class="brand" href="/">Application name</a>                <div id="contentPage" class="nav-collapse collapse">
+            <div class="container">
+                <a class="brand" href="/">Application name</a>
+                <div id="contentPage" class="nav-collapse collapse">
                     <ul class="nav">
-                        <li><a href="javascript:navigateTo('AuthorizeEchoConnection.html')">AuthorizeEchoConnection</a></li>
-                        <li><a href="javascript:navigateTo('AuthorizeEchoHub.html')">AuthorizeEchoHub</a></li>
-                        <li><a href="javascript:postLogoutForm()">Log off</a></li>
+                        <li><a href="AuthorizeEchoConnection.html">AuthorizeEchoConnection</a></li>
+                        <li><a href="AuthorizeEchoHub.html">AuthorizeEchoHub</a></li>
                     </ul>
                 </div>
             </div>
