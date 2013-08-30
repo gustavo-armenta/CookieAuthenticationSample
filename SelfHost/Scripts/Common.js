@@ -30,8 +30,12 @@ function getTimeString() {
     if (minutes < 10) {
         minutes = "0" + minutes;
     }
+    var seconds = currentTime.getSeconds();
+    if (seconds < 10) {
+        seconds = "0" + seconds;
+    }
 
-    return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
+    return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes + ':' + seconds;
 }
 
 function getQueryVariable(variable) {
@@ -53,9 +57,12 @@ function updateLoginForm() {
         xhrFields: { withCredentials: true },        
         success: function (content) {
             writeLine("login.get.done");
-            var requestVerificationToken = $("input[name='__RequestVerificationToken']", $(content)).val();
-            var requestVerificationTokenField = $("[name=__RequestVerificationToken]");
-            requestVerificationTokenField.val(requestVerificationToken);
+            var tokenInResponseContent = $("input[name='__RequestVerificationToken']", $(content));
+            if (tokenInResponseContent) {
+                var requestVerificationToken = tokenInResponseContent.val();
+                var tokenInFormInput = $("input[name=__RequestVerificationToken]");
+                tokenInFormInput.val(requestVerificationToken);
+            }
 
             $("#loginButton").removeAttr('disabled');
         },
@@ -73,16 +80,74 @@ function postLoginForm() {
         xhrFields: { withCredentials: true },
         success: function (content) {
             writeLine("login.post.done");
-            var requestVerificationToken = $("input[name='__RequestVerificationToken']", $(content)).val();
+            var tokenInResponseContent = $("input[name='__RequestVerificationToken']", $(content)).val();
+            if (tokenInResponseContent) {
+                var tokenInFormInput = $("input[name='__RequestVerificationToken']");
+                tokenInFormInput.val(tokenInResponseContent);
+            }
+            
+            var domContent = $(content);
+            var loginError = $(".validation-summary-errors", domContent).text();
+            if (!loginError) {
+                loginError = $("ul#errors", domContent).text();
+            }
 
-            var loginPage = $("#loginPage");
-            var contentPage = $("#contentPage");
+            if (loginError) {
+                writeError(loginError);
+                return;
+            }
 
-            loginPage.hide();
-            contentPage.show();
+            navigateTo("AuthorizeEchoConnection.html");
         },
         error: function (error) {
             writeError("login.post.fail " + error);
         }
     });
+}
+
+function postLogoutForm() {
+    $.ajax({
+        url: "http://localhost:8080/Account/LogOff",
+        type: "POST",
+        data: $("#logoutForm").serialize(),
+        xhrFields: { withCredentials: true },
+        success: function (content) {
+            writeLine("logout.post.done");
+            navigateTo("index.html");
+        },
+        error: function (error) {
+            writeError("logout.post.fail " + error);
+
+            $.ajax({
+                url: "http://localhost:8080/Account/Logout",
+                type: "POST",
+                data: $("#logoutForm").serialize(),
+                xhrFields: { withCredentials: true },
+                success: function (content) {
+                    writeLine("logout.post.done");
+                    navigateTo("index.html");
+                },
+                error: function (error) {
+                    writeError("logout.post.fail " + error);
+                }
+            });
+        }
+    });
+}
+
+function setTokenInForm() {
+    var tokenInRequestQuery = getQueryVariable("__RequestVerificationToken");
+    var tokenInFormInput = $("input[name='__RequestVerificationToken']");
+    if (tokenInRequestQuery && tokenInFormInput) {
+        tokenInFormInput.val(tokenInRequestQuery);
+    }
+}
+
+function navigateTo(url) {
+    var queryString = "";
+    var tokenInFormInput = $("input[name='__RequestVerificationToken']");
+    if (tokenInFormInput) {
+        queryString = "?__RequestVerificationToken=" + tokenInFormInput.val();
+    }
+    window.location.href = url + queryString;
 }

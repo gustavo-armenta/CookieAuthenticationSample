@@ -34,10 +34,11 @@ namespace SelfHost
                 {
                     if (context.Request.Method == "GET")
                     {
-                        byte[] bytes = Encoding.UTF8.GetBytes("<input name=\"__RequestVerificationToken\" type=\"hidden\" value=\"0\" />");
+                        byte[] bytes = Encoding.UTF8.GetBytes("<html><body><div><ul id=\"errors\"><li>Invalid user credentials</li></ul></div></body></html>");
                         context.Response.ContentLength = bytes.LongLength;
                         context.Response.ContentType = "text/html";
                         context.Response.Body.Write(bytes, 0, bytes.Length);
+
                         return Task.FromResult<object>(null);
                     }
                     else
@@ -46,7 +47,7 @@ namespace SelfHost
                         var userName = form.Get("UserName");
                         var password = form.Get("Password");
 
-                        if(userName != "user" || password != "password")
+                        if(!ValidateUserCredentials(userName, password))
                         {
                             context.Authentication.Challenge(options.AuthenticationType);
                             return Task.FromResult<object>(null);
@@ -56,10 +57,6 @@ namespace SelfHost
                         identity.AddClaim(new Claim(ClaimTypes.Name, userName));
                         context.Authentication.SignIn(identity);
 
-                        byte[] bytes = Encoding.UTF8.GetBytes("<input name=\"__RequestVerificationToken\" type=\"hidden\" value=\"0\" />");
-                        context.Response.ContentLength = bytes.LongLength;
-                        context.Response.ContentType = "text/html";
-                        context.Response.Body.Write(bytes, 0, bytes.Length);
                         return Task.FromResult<object>(null);
                     }
                 }
@@ -74,6 +71,11 @@ namespace SelfHost
 
             app.MapSignalR<AuthorizeEchoConnection>("/echo");
             app.MapSignalR();
+        }
+
+        private bool ValidateUserCredentials(string userName, string password)
+        {
+            return userName == "user" && password == "password";
         }
     }
 }

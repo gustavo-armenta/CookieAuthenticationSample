@@ -3,6 +3,7 @@
 <head>
     <title></title>
     <link href="Content/bootstrap.css" rel="stylesheet" />
+    <link href="Content/bootstrap-responsive.css" rel="stylesheet" />
     <script src="http://localhost:8080/Scripts/jquery-1.8.2.js"></script>
     <script src="Scripts/bootstrap.js"></script>
     <script src="http://localhost:8080/Scripts/jquery.signalR-2.0.0-rc1.js"></script>
@@ -11,17 +12,35 @@
     <script src="http://localhost:8080/Scripts/AuthorizeEchoHub.js"></script>
     <script>
         $(function () {
+            setTokenInForm();
             startSignalR();
         });
     </script>
 </head>
 <body>
-    <hgroup>
-        <h2>SignalR Hub.</h2>
-        <h3>Only an authenticated user can connect to this Hub.</h3>
-    </hgroup>
-    <p><a href="AuthorizeEchoConnection.html">AuthorizeEchoConnection.html</a></p>
-    <p><a href="AuthorizeEchoHub.html">AuthorizeEchoHub.html</a></p>
-    <ul id="Messages"></ul>
+    <form action="/Account/LogOff" class="navbar-form pull-right" id="logoutForm" method="post">
+        <input name="__RequestVerificationToken" type="hidden" value="" /> 
+    </form>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <a class="brand" href="/">Application name</a>
+                <div id="contentPage" class="nav-collapse collapse">
+                    <ul class="nav">
+                        <li><a href="javascript:navigateTo('AuthorizeEchoConnection.html')">AuthorizeEchoConnection</a></li>
+                        <li><a href="javascript:navigateTo('AuthorizeEchoHub.html')">AuthorizeEchoHub</a></li>
+                        <li><a href="javascript:postLogoutForm()">Log off</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container" style="padding-top: 60px;">
+        <hgroup>
+            <h2>SignalR Hub.</h2>
+            <h3>Only an authenticated user can connect to this Hub.</h3>
+        </hgroup>
+        <ul id="Messages"></ul>
+    </div>
 </body>
 </html>

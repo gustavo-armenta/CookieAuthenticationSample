@@ -3,3 +3,4 @@
 *.suo
 packages/
 WebHost/App_Data/
+WebHost/Scripts/

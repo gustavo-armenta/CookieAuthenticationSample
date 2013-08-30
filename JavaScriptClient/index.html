@@ -3,6 +3,7 @@
 <head>
     <title></title>
     <link href="Content/bootstrap.css" rel="stylesheet" />
+    <link href="Content/bootstrap-responsive.css" rel="stylesheet" />
     <script src="http://localhost:8080/Scripts/jquery-1.8.2.js"></script>
     <script src="Scripts/bootstrap.js"></script>
     <script src="http://localhost:8080/Scripts/Common.js"></script>
@@ -13,10 +14,20 @@
     </script>
 </head>
 <body>
-    <div id="loginPage">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">                <a class="brand" href="/">Application name</a>                <div id="contentPage" class="nav-collapse collapse">
+                    <ul class="nav">
+                        <li><a href="javascript:navigateTo('AuthorizeEchoConnection.html')">AuthorizeEchoConnection</a></li>
+                        <li><a href="javascript:navigateTo('AuthorizeEchoHub.html')">AuthorizeEchoHub</a></li>                      
+                    </ul>
+                </div>
+            </div>
+        </div>        
+    </div>
+    <div class="container" style="padding-top: 60px;">
         <hgroup>
-            <h2>Login.</h2>
-            <h3>Login to SignalR Server using Cross-Domain.</h3>
+            <h3>Login to external SignalR Server</h3>
         </hgroup>
         <form id="loginForm">
             <input name="__RequestVerificationToken" type="hidden" value="" />
@@ -48,15 +59,7 @@
                 </div>
             </fieldset>
         </form>
+        <ul id="Messages"></ul>
     </div>
-    <div id="contentPage" style="display:none">
-        <hgroup>
-            <h2>Logged in to SignalR server.</h2>
-            <h2>Select PersistentConnection or Hub Sample.</h2>
-        </hgroup>
-        <p><a href="AuthorizeEchoConnection.html">AuthorizeEchoConnection.html</a></p>
-        <p><a href="AuthorizeEchoHub.html">AuthorizeEchoHub.html</a></p>
-    </div>
-    <ul id="Messages"></ul>
 </body>
 </html>

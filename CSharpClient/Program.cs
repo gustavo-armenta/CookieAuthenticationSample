@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNet.SignalR.Client;
-using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Client.Transports;
-using System;
+﻿using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNet.SignalR.Client.Http;
+using Microsoft.AspNet.SignalR.Client.Transports;
 
 namespace CSharpClient
 {
@@ -49,13 +49,13 @@ namespace CSharpClient
 
                 await RunPersistentConnection(url, httpClient, handler.CookieContainer, requestVerificationToken);
                 await RunHub(url, httpClient, handler.CookieContainer, requestVerificationToken);
-
+                
                 _traceWriter.WriteLine();
                 _traceWriter.WriteLine("Sending http POST to {0}", url + "Account/LogOff");
-                response = await httpClient.PostAsync(url + "Account/LogOff", new StringContent(requestVerificationToken, Encoding.UTF8, "application/x-www-form-urlencoded"));
-
+                response = await httpClient.PostAsync(url + "Account/LogOff", CreateContent(requestVerificationToken));
+                
                 _traceWriter.WriteLine("Sending http POST to {0}", url + "Account/Logout");
-                response = await httpClient.PostAsync(url + "Account/Logout", new StringContent(requestVerificationToken, Encoding.UTF8, "application/x-www-form-urlencoded"));
+                response = await httpClient.PostAsync(url + "Account/Logout", CreateContent(requestVerificationToken));
             }
         }
 
@@ -100,8 +100,25 @@ namespace CSharpClient
         private string ParseRequestVerificationToken(string content)
         {
             var startIndex = content.IndexOf("__RequestVerificationToken");
+            
+            if (startIndex == -1)
+            {
+                return null;
+            }
+
             content = content.Substring(startIndex, content.IndexOf("\" />", startIndex) - startIndex);
             content = content.Replace("\" type=\"hidden\" value=\"", "=");
+            return content;
+        }
+
+        private StringContent CreateContent(string requestVerificationToken)
+        {
+            var content = new StringContent("", Encoding.UTF8, "application/x-www-form-urlencoded");
+            if (!string.IsNullOrEmpty(requestVerificationToken))
+            {
+                content = new StringContent(requestVerificationToken, Encoding.UTF8, "application/x-www-form-urlencoded");
+            }
+
             return content;
         }
     }
