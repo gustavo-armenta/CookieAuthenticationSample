@@ -14,11 +14,10 @@ namespace CSharpClient
     {
         static void Main(string[] args)
         {
-            var writer = Console.Out;
-            var client = new CommonClient(writer);
-            client.RunAsync("http://localhost:8080/").Wait();
+            string url = "http://localhost:8080/";
 
-            Console.ReadKey();
+            Program program = new Program();
+            program.RunAsync(url).Wait();
         }
 
         private TextWriter _traceWriter = Console.Out;

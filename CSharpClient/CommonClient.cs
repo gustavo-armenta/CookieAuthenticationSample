@@ -10,25 +10,21 @@ using Microsoft.AspNet.SignalR.Client.Transports;
 
 namespace CSharpClient
 {
-    class Program
+    class CommonClient
     {
-        static void Main(string[] args)
+        private TextWriter _traceWriter;
+
+        public CommonClient(TextWriter traceWriter)
         {
-            var writer = Console.Out;
-            var client = new CommonClient(writer);
-            client.RunAsync("http://localhost:8080/").Wait();
-
-            Console.ReadKey();
+            _traceWriter = traceWriter;
         }
-
-        private TextWriter _traceWriter = Console.Out;
 
         private static IClientTransport GetClientTransport()
         {
             return new AutoTransport(new DefaultHttpClient());            
         }
 
-        private async Task RunAsync(string url)
+        public async Task RunAsync(string url)
         {
             HttpClientHandler handler = new HttpClientHandler();
             handler.CookieContainer = new CookieContainer();

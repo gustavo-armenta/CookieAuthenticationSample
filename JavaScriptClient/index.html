@@ -3,60 +3,30 @@
 <head>
     <title></title>
     <link href="Content/bootstrap.css" rel="stylesheet" />
+    <link href="Content/bootstrap-responsive.css" rel="stylesheet" />
     <script src="http://localhost:8080/Scripts/jquery-1.8.2.js"></script>
     <script src="Scripts/bootstrap.js"></script>
     <script src="http://localhost:8080/Scripts/Common.js"></script>
-    <script>
-        $(function () {
-            updateLoginForm("http://localhost:8080");
-        });
-    </script>
 </head>
 <body>
-    <div id="loginPage">
-        <hgroup>
-            <h2>Login.</h2>
-            <h3>Login to SignalR Server using Cross-Domain.</h3>
-        </hgroup>
-        <form id="loginForm">
-            <input name="__RequestVerificationToken" type="hidden" value="" />
-            <fieldset class="form-horizontal">
-                <div class="control-group">
-                    <label class="control-label" for="UserName">User name</label>
-                    <div class="controls">
-                        <input data-val="true" data-val-required="The User name field is required." id="UserName" name="UserName" type="text" value="" />
-                        <span class="field-validation-valid help-inline" data-valmsg-for="UserName" data-valmsg-replace="true"></span>
-                    </div>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <a class="brand" href="/">Application name</a>
+                <div id="contentPage" class="nav-collapse collapse">
+                    <ul class="nav">
+                    </ul>
                 </div>
-                <div class="control-group">
-                    <label class="control-label" for="Password">Password</label>
-                    <div class="controls">
-                        <input data-val="true" data-val-required="The Password field is required." id="Password" name="Password" type="password" />
-                        <span class="field-validation-valid help-inline" data-valmsg-for="Password" data-valmsg-replace="true"></span>
-                    </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <label class="checkbox">
-                            <input data-val="true" data-val-required="The Remember me? field is required." id="RememberMe" name="RememberMe" type="checkbox" value="true" /><input name="RememberMe" type="hidden" value="false" />
-                            <label for="RememberMe">Remember me?</label>
-                        </label>
-                    </div>
-                </div>
-                <div class="form-actions no-color">
-                    <input type="button" id="loginButton" value="Log in" class="btn" disabled="disabled" onclick="postLoginForm('http://localhost:8080')" />
-                </div>
-            </fieldset>
-        </form>
+            </div>
+        </div>        
     </div>
-    <div id="contentPage" style="display:none">
+    <div class="container" style="padding-top: 60px;">
         <hgroup>
-            <h2>Logged in to SignalR server.</h2>
-            <h2>Select PersistentConnection or Hub Sample.</h2>
+            <h3>Login to external SignalR Server</h3>
         </hgroup>
-        <p><a href="AuthorizeEchoConnection.html">AuthorizeEchoConnection.html</a></p>
-        <p><a href="AuthorizeEchoHub.html">AuthorizeEchoHub.html</a></p>
+        <p>This is a thin web client (http://localhost:31111/) doing cross-domain communication to a server (http://localhost:8080/) hosting SignalR hubs and persistent connections. 
+           Login process redirects you to SignalR server to input credentials and then you are redirected again to this client.</p>
+        <a href="http://localhost:8080/Account/Login?ReturnUrl=http%3A%2F%2Flocalhost%3A31111%2FAuthorizeEchoConnection.html">Click here to login</a>
     </div>
-    <ul id="Messages"></ul>
 </body>
 </html>

@@ -22,16 +22,7 @@ function printState(state) {
 
 function getTimeString() {
     var currentTime = new Date();
-    var month = currentTime.getMonth() + 1;
-    var day = currentTime.getDate();
-    var year = currentTime.getFullYear();
-    var hours = currentTime.getHours();
-    var minutes = currentTime.getMinutes();
-    if (minutes < 10) {
-        minutes = "0" + minutes;
-    }
-
-    return month + '/' + day + '/' + year + ' ' + hours + ':' + minutes;
+    return currentTime.toTimeString();
 }
 
 function getQueryVariable(variable) {
@@ -46,43 +37,8 @@ function getQueryVariable(variable) {
     }
 }
 
-function updateLoginForm(baseUrl) {
-    $.ajax({
-        url: (baseUrl || "") + "/Account/Login",
-        type: "GET",
-        xhrFields: { withCredentials: true },        
-        success: function (content) {
-            writeLine("login.get.done");
-            var requestVerificationToken = $("input[name='__RequestVerificationToken']", $(content)).val();
-            var requestVerificationTokenField = $("[name=__RequestVerificationToken]");
-            requestVerificationTokenField.val(requestVerificationToken);
-
-            $("#loginButton").removeAttr('disabled');
-        },
-        error: function (error) {
-            writeError("login.get.fail " + error);
-        }
-    });
-}
-
-function postLoginForm(baseUrl) {
-    $.ajax({
-        url: (baseUrl || "") + "/Account/Login",
-        type: "POST",
-        data: $("#loginForm").serialize(),
-        xhrFields: { withCredentials: true },
-        success: function (content) {
-            writeLine("login.post.done");
-            var requestVerificationToken = $("input[name='__RequestVerificationToken']", $(content)).val();
-
-            var loginPage = $("#loginPage");
-            var contentPage = $("#contentPage");
-
-            loginPage.hide();
-            contentPage.show();
-        },
-        error: function (error) {
-            writeError("login.post.fail " + error);
-        }
-    });
+function postLoginForm() {
+    var loginForm = $("#loginForm");
+    loginForm.attr("action", "/Account/Login" + window.location.search);
+    loginForm.submit();
 }
