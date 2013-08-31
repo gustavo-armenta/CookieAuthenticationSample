@@ -46,9 +46,9 @@ function getQueryVariable(variable) {
     }
 }
 
-function updateLoginForm() {
+function updateLoginForm(baseUrl) {
     $.ajax({
-        url: "http://localhost:8080/Account/Login",
+        url: (baseUrl || "") + "/Account/Login",
         type: "GET",
         xhrFields: { withCredentials: true },        
         success: function (content) {
@@ -65,9 +65,9 @@ function updateLoginForm() {
     });
 }
 
-function postLoginForm() {
+function postLoginForm(baseUrl) {
     $.ajax({
-        url: "http://localhost:8080/Account/Login",
+        url: (baseUrl || "") + "/Account/Login",
         type: "POST",
         data: $("#loginForm").serialize(),
         xhrFields: { withCredentials: true },

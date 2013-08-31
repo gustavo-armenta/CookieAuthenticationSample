@@ -11,7 +11,7 @@ namespace WebHost
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
                         "~/Scripts/jquery-{version}.js"));
 
-            bundles.Add(new ScriptBundle("~/bundles/jquery.signalR").Include(
+            bundles.Add(new ScriptBundle("~/bundles/jquerysignalR").Include(
                         "~/Scripts/jquery.signalR-{version}.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryval").Include(

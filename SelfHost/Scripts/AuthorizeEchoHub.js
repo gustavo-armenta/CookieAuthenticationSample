@@ -1,11 +1,11 @@
 ﻿/// <reference path="jquery.signalR-2.0.0-rc1.js" />
 /// <reference path="common.js" />
 
-function startSignalR() {
+function startSignalR(baseUrl) {
     var activeTransport = getQueryVariable('transport') || 'auto';
 
     var connection = $.connection.hub;
-    connection.url = "http://localhost:8080/signalr";
+    connection.url = (baseUrl || "") + "/signalr";
     var authorizeEchoHub = $.connection.authorizeEchoHub;
     connection.logging = true;
 

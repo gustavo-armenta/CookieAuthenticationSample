@@ -8,7 +8,7 @@
     <script src="http://localhost:8080/Scripts/Common.js"></script>
     <script>
         $(function () {
-            updateLoginForm();
+            updateLoginForm("http://localhost:8080");
         });
     </script>
 </head>
@@ -44,7 +44,7 @@
                     </div>
                 </div>
                 <div class="form-actions no-color">
-                    <input type="button" id="loginButton" value="Log in" class="btn" disabled="disabled" onclick="postLoginForm()" />
+                    <input type="button" id="loginButton" value="Log in" class="btn" disabled="disabled" onclick="postLoginForm('http://localhost:8080')" />
                 </div>
             </fieldset>
         </form>

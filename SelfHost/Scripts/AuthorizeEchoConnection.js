@@ -1,10 +1,10 @@
 ﻿/// <reference path="jquery.signalR-2.0.0-rc1.js" />
 /// <reference path="common.js" />
 
-function startSignalR() {
+function startSignalR(baseUrl) {
     var activeTransport = getQueryVariable('transport') || 'auto';
 
-    var connection = $.connection("http://localhost:8080/echo");
+    var connection = $.connection((baseUrl || "") + "/echo");
     connection.logging = true;
 
     connection.connectionSlow(function () {
