@@ -5,6 +5,8 @@ Protected SignalR endpoint web-hosted or self-hosted can be accessed by authenti
 
 **CookieAuthenticationSample** demos how to use form/cookie based authentication for different types of signalR connection.  
 
+If you have general signalR questions, please ask in stackoverflow with tag signalr.
+
 Solution contains four projects
 --
 
