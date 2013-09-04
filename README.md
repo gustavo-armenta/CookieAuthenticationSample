@@ -1,35 +1,35 @@
 CookieAuthenticationSample
 ==========================
 
-Protected SignalR endpoint webhosted or selfhosted can be accessed by authenticated C# and/or JS client
+Protected SignalR endpoint web-hosted or self-hosted can be accessed by authenticated C# and/or JS client
 
 **CookieAuthenticationSample** demos how to use form/cookie based authentication for different types of signalR connection.  
 
 Solution contains four projects
 --
 
-- A **web host** project which uses IIS Express with port 8080 as the host and MVC5 form cookie based login pages.  It demos how signalR connections can be used inside MVC5 project which requires authentication. 
+- A **web host** project which uses IIS Express with port 8080 as the host and MVC5 form cookie based log-in pages.  It demos how signalR connections can be used inside MVC5 project which requires authentication. 
 
 - A **JavaScript Client** uses IIS Express as the host.  The client authenticate and perform signalR actions with the server.  This demos that cross domain functionality works in the server.
 
 - **CSharpClient** is a console application.  It demos that how we can use HttpClient to authenticate with the web host, then use signalR with authenticated CookieContainer to communicate with the server.
 
-- An **OWIN selfhost** project.  It uses OWIN host to self-host an over simplified http server listening to port 8080.  It just demos that an authentication can be done, and the clients can also connect to this server instead of the web host.  Note, the port is the same as in web host.  
+- An **OWIN selfhost** project.  It uses OWIN host to self-host an owin HTTP server listening to port 83.  It simplified the authentication model to only allow user/password pair to log in.  But it demos the form authentication in an self host environment.
 
-Walkthrough
+- A **Windows Phone** project and a **Windows Store** project that demos that they can use almost the same code as CSharpClient to perform the authentication and signalR in these platforms.    
+
+Walk through
 =====
-In the following walkthroughs, if you'd like to examine the web traffic, either use browser F12 network tools or Fiddler will work fine.  For any user registration,  let User name = 'user', Password = 'password'.  This is needed because we hard coded this authentication later in selfhost and CSharpClient for simplification.
+In the following walk through, if you'd like to examine the web traffic, either use browser F12 network tools or Fiddler will work fine.  For any user registration,  let User name = 'user', Password = 'password'.  This is needed because we hard coded this authentication later in self-host and CSharpClient for simplification.
 
-Web host walkthrough
+Web host walk through
 --
 1. Make sure all projects build successfully.
 2. Set Web host as start project
 3. F5/ctrl-f5 to run.
-4. Without login, go to AuthorizeEchoConnection or AuthorizeEchoHub page will require you to login
+4. Without login, go to AuthorizeEchoConnection or AuthorizeEchoHub page will require you to log in
 5. Register User 'user' with Password 'password'
-6. Goto AuthorizeEchoConnection page through menu, it should display like following, which demonstrate how a signalR persistent connection works
-
-	
+6. Go to AuthorizeEchoConnection page through menu, it should display like following, which demonstrate how a signalR persistent connection works
 	    SignalR Persistent Connection.
 	    Only an authenticated user can connect to this Persistent Connection.
 	    •8/29/2013 17:22 stateChanged: disconnected => connecting
@@ -41,7 +41,7 @@ Web host walkthrough
 	    •8/29/2013 17:22 received: sending to AuthorizeEchoConnection
 
 
-7. Goto AuthorizeEchoHub page through menu, it should display like following, which demonstrate how a signalR hub connection works
+7. Go to AuthorizeEchoHub page through menu, it should display like following, which demonstrate how a signalR hub connection works
 	
 		SignalR Hub.
 		Only an authenticated user can connect to this Hub.
@@ -58,43 +58,48 @@ Web host walkthrough
 		•8/29/2013 17:28 received: {"H":"AuthorizeEchoHub","M":"hubReceived","A":["sending to AuthorizeEchoHub"]}
 		•8/29/2013 17:28 received: {"I":"0"}
 	
-JavaScript Client walkthrough
+JavaScript Client walk through
 --
-1. In project JavaScriptClient, browse AuthorizeEchoHub.html directly, you will get following, indicating that there are negotiation errors, which actually because we are not authenticated to the web host yet.  Similar error is for AuthorizeEchoConnection page at this time.
-	
-		SignalR Hub.
-		Only an authenticated user can connect to this Hub.
-		AuthorizeEchoConnection.html
-		AuthorizeEchoHub.html
-		•8/29/2013 17:30 stateChanged: disconnected => connecting
-		•8/29/2013 17:30 starting
-		•8/29/2013 17:30 Error: Message=Error during negotiation request. Stack=undefined Message=Error parsing negotiate response. Stack=undefined Message=Invalid character Stack=SyntaxError: Invalid character at _parseResponse (http://localhost:8080/Scripts/jquery.signalR-2.0.0-rc1.js:335:17) at success (http://localhost:8080/Scripts/jquery.signalR-2.0.0-rc1.js:652:29) at fire (http://localhost:8080/Scripts/jquery-1.8.2.js:974:5) at fireWith (http://localhost:8080/Scripts/jquery-1.8.2.js:1082:7) at done (http://localhost:8080/Scripts/jquery-1.8.2.js:7788:5) at callback (http://localhost:8080/Scripts/jquery-1.8.2.js:8500:8)
-		•8/29/2013 17:30 start.fail Error: Error during negotiation request.
-		•8/29/2013 17:30 disconnected
-		•8/29/2013 17:30 stateChanged: connecting => disconnected
-	
-2. browse to Index.html, login with  User 'user' with Password 'password'
-	
-3. Go back to AuthorizeEchoHub and AuthorizeEchoConnection page through the link, we should no longer see error message anymore.
+1. Start Web host server
+2. In project JavaScriptClient, browse index.html directly, you will get a link to external log-in Web host.
+3. Click the link and Log in Web host. It will redirect you back to http://localhost:31111/AuthorizeEchoConnection.html and you should see similar result as shown in webhost walk through
+4. Click menu item AuthorizeEchoHub to visit http://localhost:31111/AuthorizeEchoHub.html to verify hub.
 
-CSharpClient walkthrough
+
+CSharpClient walk through
 --
 1. In a command prompt, go to CookieAuthenticationSample\CSharpClient\bin\Debug folder
 2. Run CSharpClient.exe
 3. Examine result, it should show detailed output of how authentication and signalR connections are processed
 
-SelfHost walkthrough
+SelfHost walk through
 --
-1. Stop the web host site since the web host also uses port 8080
-2. In a new command prompt, go to CookieAuthenticationSample\SelfHost\bin\Debug folder
-3. Run SelfHost.exe
-4. Repeat JavaScript Client walkthrough and CSharpClient walkthrough
+1. In a new command prompt, go to CookieAuthenticationSample\SelfHost\bin\Debug folder
+2. Run SelfHost.exe which starts a server at http://localhost:83/
+3. In IE, run http://localhost:83/
+4. Log in with User 'user' with Password 'password'
+5. Examine http://localhost:83/AuthorizeEchoConnection.html and http://localhost:83/AuthorizeEchoHub.html
 
-Code walkthrough
+Windows Store App Walk through
+--
+The sample app s based on Windows phone 8, note, it shares the same code as in CSharpClient
+
+1. Use either web host server or self host server locally, http://localhost:8080/
+2. Run the windows store app project in local machine
+
+Windows Phone App Walk through
+--
+The sample app s based on Windows phone 8, note, it shares the same code as in CSharpClient
+
+1. Deploy Web host project to a server, such as Azure website at http://signalr-test1.azurewebsites.net/, replace the URL making it client.RunAsync parameter in MainPage.xaml.cs file. It's because windows phone emulator runs in a separate virtual machine therefore you can't use a URL containing localhost.
+2. Run windows phone project in the emulator.
+               
+
+Code walk through
 ==
 SelfHost\Connections\AuthorizeEchoConnection.cs
 -
-AuthorizeEchoConnection class inherits PersistentConnection and make sure override AuthorizeRequest to implement SignalR authorization for persistent connection 
+AuthorizeEchoConnection class inherits PersistentConnection and make sure override AuthorizeRequest to implement SignalR authorization for persistent connection.  Also used in WebHost project as a link.
 
 	using Microsoft.AspNet.SignalR;
 	using System.Threading.Tasks;
@@ -121,7 +126,7 @@ AuthorizeEchoConnection class inherits PersistentConnection and make sure overri
 	}
 SelfHost\Hubs\AuthorizeEchoHub.cs
 -
-Attribute Authorize (Microsoft.AspNet.SignalR.AuthorizeAttribute) can be used to authorize hubs
+Attribute Authorize (Microsoft.AspNet.SignalR.AuthorizeAttribute) can be used to authorize hubs.  Also used in WebHost project as a link.
 
 	using Microsoft.AspNet.SignalR;
 	using System.Threading.Tasks;
@@ -170,15 +175,15 @@ Note app.UseCors to allow cross origin message for all the requests in this webs
 
 SelfHost\Program.cs
 --
-We use Owin host package to create our console process, which uses WebApp.Start to initiate the self host and listen to locahost:8080.
+We use OWIN host package to create our console process, which uses WebApp.Start to initiate the self host and listen to local machine's 83 port.
 
     class Program
     {
         static void Main(string[] args)
         {
-            using (WebApp.Start<Startup>("http://localhost:8080/"))
+            using (WebApp.Start<Startup>("http://*:83/"))
             {
-                Console.WriteLine("Server running at http://localhost:8080/");
+                Console.WriteLine("Server running at http://localhost:83/");
                 Console.ReadLine();
             }
         }
@@ -196,6 +201,7 @@ We use OWIN static file extension middleware package (still in development as of
 
             string contentPath = Path.Combine(Environment.CurrentDirectory, @"..\..");
             app.UseStaticFiles(contentPath);
+            loginForm = File.ReadAllBytes(Path.Combine(contentPath, @"Account/form.html"));
 
             var options = new CookieAuthenticationOptions()
             {
@@ -206,74 +212,79 @@ We use OWIN static file extension middleware package (still in development as of
 
             app.UseCookieAuthentication(options);
 
-We insert our middle ware to the OWIN pipe line to intercept login/logout calls and determine authentication.
+We insert our middle ware to the OWIN pipe line to intercept login/logout calls and determine authentication.  Note, we redirect login URL if RedirectUrl is present in the incoming URL.
+            
+                var redirectUri = context.Request.Query.Get("ReturnUrl");
 
-            app.Use((context, next) =>
-            {
                 if(context.Request.Path.Contains(options.LoginPath))
                 {
-                    if (context.Request.Method == "GET")
-                    {
-                        byte[] bytes = Encoding.UTF8.GetBytes("<input name=\"__RequestVerificationToken\" type=\"hidden\" value=\"0\" />");
-                        context.Response.ContentLength = bytes.LongLength;
-                        context.Response.ContentType = "text/html";
-                        context.Response.Body.Write(bytes, 0, bytes.Length);
-                        return Task.FromResult<object>(null);
-                    }
-                    else
+                    if (context.Request.Method == "POST")
                     {
                         var form = context.Request.ReadFormAsync().Result;
                         var userName = form.Get("UserName");
                         var password = form.Get("Password");
 
+                        if (!ValidateUserCredentials(userName, password))
+                        {
+                            var redirect = options.LoginPath;
+                            if (!String.IsNullOrEmpty(redirectUri))
+                            {
+                                redirect += "?ReturnUrl=" + HttpUtility.UrlEncode(redirectUri);
+                            }
+                            context.Response.Redirect(redirect);
+                            return Task.FromResult<object>(null);
+                        }
+
+                        var identity = new ClaimsIdentity(options.AuthenticationType);
+                        identity.AddClaim(new Claim(ClaimTypes.Name, userName));
+                        context.Authentication.SignIn(identity);
+
+                        redirectUri = redirectUri ?? "/index.html";
+                        context.Response.Redirect(redirectUri);
+                        return Task.FromResult<object>(null);
+                    }
+                    else
+                    {
+                        context.Response.ContentLength = loginForm.LongLength;
+                        context.Response.ContentType = "text/html";
+                        context.Response.Body.Write(loginForm, 0, loginForm.Length);
+                        return Task.FromResult<object>(null);
+                    }
+                }
+                else if (context.Request.Path.Contains(options.LogoutPath))
+                {
+                    context.Authentication.SignOut(options.AuthenticationType);
+                    redirectUri = redirectUri ?? options.LoginPath;
+                    context.Response.Redirect(redirectUri);
+                    return Task.FromResult<object>(null);
+                }
+                else if (context.Request.User == null || !context.Request.User.Identity.IsAuthenticated)
+                {
+                    context.Response.Redirect(options.LoginPath);
+                    return Task.FromResult<object>(null);
+                }
+                else if (context.Request.Path == "/")
+                {
+                    context.Response.Redirect("/index.html");
+                    return Task.FromResult<object>(null);
+                }
+
+                return next.Invoke();
+            });
+
 SelfHost/Scripts/Common.js
 --
-We use Javascript code to perform get login form and post our login cross domain for JavaScriptClient index.html login form. 
-
-	function updateLoginForm() {
-	    $.ajax({
-	        url: "http://localhost:8080/Account/Login",
-	        type: "GET",
-	        xhrFields: { withCredentials: true },        
-	        success: function (content) {
-	            writeLine("login.get.done");
-	            var requestVerificationToken = $("input[name='__RequestVerificationToken']", $(content)).val();
-	            var requestVerificationTokenField = $("[name=__RequestVerificationToken]");
-	            requestVerificationTokenField.val(requestVerificationToken);
-	
-	            $("#loginButton").removeAttr('disabled');
-	        },
-	        error: function (error) {
-	            writeError("login.get.fail " + error);
-	        }
-	    });
-	}
+We use JavaScript code to perform login form post. 
 	
 	function postLoginForm() {
-	    $.ajax({
-	        url: "http://localhost:8080/Account/Login",
-	        type: "POST",
-	        data: $("#loginForm").serialize(),
-	        xhrFields: { withCredentials: true },
-	        success: function (content) {
-	            writeLine("login.post.done");
-	            var requestVerificationToken = $("input[name='__RequestVerificationToken']", $(content)).val();
-	
-	            var loginPage = $("#loginPage");
-	            var contentPage = $("#contentPage");
-	
-	            loginPage.hide();
-	            contentPage.show();
-	        },
-	        error: function (error) {
-	            writeError("login.post.fail " + error);
-	        }
-	    });
+	    var loginForm = $("#loginForm");
+	    loginForm.attr("action", "/Account/Login" + window.location.search);
+	    loginForm.submit();
 	}
 
 SelfHost\Scripts\AuthorizeEchoConnection.js and AuthorizeEchoHub.js
 --
-These 2 JavaScipt files defines the SignalR operation and events, including connection, disconnection, reconnect, stateChanged events.
+These 2 JavaScript files defines the SignalR operation and events, including connection, disconnection, reconnect, stateChanged events.
 
 
     connection.connectionSlow(function () {
@@ -360,7 +371,7 @@ RunAsync function defines how we can use HttpClient, CookieContainer to login an
             }
         }
 
-RunPersistentConnection and RunHub function demonstrates how to use the cookieContainer to run authenticated signalR functions
+RunPersistentConnection and RunHub function demonstrates how to use the CookieContainer to run authenticated signalR functions
 
 
         private async Task RunPersistentConnection(string url, HttpClient httpClient, CookieContainer cookieContainer, string requestVerificationToken)
@@ -400,6 +411,10 @@ RunPersistentConnection and RunHub function demonstrates how to use the cookieCo
                 await Task.Delay(TimeSpan.FromSeconds(2));
             }
         }
+
+CSharpClient\CommonClient.cs
+--
+This file is almost the same as program.cs, which is used by the Windows phone and Windows store sample apps to do the exact same thing as in the CSharpClient program. 
 
 Summary
 ==
