@@ -30,6 +30,7 @@ Web host walk through
 4. Without login, go to AuthorizeEchoConnection or AuthorizeEchoHub page will require you to log in
 5. Register User 'user' with Password 'password'
 6. Go to AuthorizeEchoConnection page through menu, it should display like following, which demonstrate how a signalR persistent connection works
+
 	    SignalR Persistent Connection.
 	    Only an authenticated user can connect to this Persistent Connection.
 	    •8/29/2013 17:22 stateChanged: disconnected => connecting
