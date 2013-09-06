@@ -1,11 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using System.Web;
 using Common.Connections;
 using Microsoft.Owin.Cors;
-using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Owin;
 
@@ -32,27 +30,27 @@ namespace SelfHost
 
             app.UseCookieAuthentication(options);
            
-            app.Use((context, next) =>
+            app.Use(async (context, next) =>
             {
-                var redirectUri = context.Request.Query.Get("ReturnUrl");
+                var redirectUri = context.Request.Query["ReturnUrl"];
 
                 if(context.Request.Path.Contains(options.LoginPath))
                 {
                     if (context.Request.Method == "POST")
                     {
-                        var form = context.Request.ReadFormAsync().Result;
-                        var userName = form.Get("UserName");
-                        var password = form.Get("Password");
+                        var form = await context.Request.ReadFormAsync();
+                        var userName = form["UserName"];
+                        var password = form["Password"];
 
                         if (!ValidateUserCredentials(userName, password))
                         {
                             var redirect = options.LoginPath;
                             if (!String.IsNullOrEmpty(redirectUri))
                             {
-                                redirect += "?ReturnUrl=" + HttpUtility.UrlEncode(redirectUri);
+                                redirect += "?ReturnUrl=" + WebUtility.UrlEncode(redirectUri);
                             }
+
                             context.Response.Redirect(redirect);
-                            return Task.FromResult<object>(null);
                         }
 
                         var identity = new ClaimsIdentity(options.AuthenticationType);
@@ -61,14 +59,11 @@ namespace SelfHost
 
                         redirectUri = redirectUri ?? "/index.html";
                         context.Response.Redirect(redirectUri);
-                        return Task.FromResult<object>(null);
                     }
                     else
                     {
-                        context.Response.ContentLength = loginForm.LongLength;
                         context.Response.ContentType = "text/html";
-                        context.Response.Body.Write(loginForm, 0, loginForm.Length);
-                        return Task.FromResult<object>(null);
+                        await context.Response.WriteAsync(loginForm);
                     }
                 }
                 else if (context.Request.Path.Contains(options.LogoutPath))
@@ -76,20 +71,19 @@ namespace SelfHost
                     context.Authentication.SignOut(options.AuthenticationType);
                     redirectUri = redirectUri ?? options.LoginPath;
                     context.Response.Redirect(redirectUri);
-                    return Task.FromResult<object>(null);
                 }
                 else if (context.Request.User == null || !context.Request.User.Identity.IsAuthenticated)
                 {
                     context.Response.Redirect(options.LoginPath);
-                    return Task.FromResult<object>(null);
                 }
                 else if (context.Request.Path == "/")
                 {
                     context.Response.Redirect("/index.html");
-                    return Task.FromResult<object>(null);
                 }
-
-                return next.Invoke();
+                else
+                {
+                    await next();
+                }
             });
 
             app.MapSignalR<AuthorizeEchoConnection>("/echo");
