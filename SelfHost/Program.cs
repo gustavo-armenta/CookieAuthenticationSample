@@ -11,9 +11,9 @@ namespace SelfHost
     {
         static void Main(string[] args)
         {
-            using (WebApp.Start<Startup>("http://*:83/"))
+            using (WebApp.Start<Startup>("http://*:8080/"))
             {
-                Console.WriteLine("Server running at http://localhost:83/");
+                Console.WriteLine("Server running at http://localhost:8080/");
                 Console.ReadLine();
             }
         }

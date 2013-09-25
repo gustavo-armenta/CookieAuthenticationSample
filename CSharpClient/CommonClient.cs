@@ -5,8 +5,6 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
-using Microsoft.AspNet.SignalR.Client.Http;
-using Microsoft.AspNet.SignalR.Client.Transports;
 
 namespace CSharpClient
 {
