@@ -27,6 +27,7 @@ namespace WebHost.Controllers
             return View();
         }
 
+
         [Authorize]
         public ActionResult AuthorizeEchoConnection()
         {

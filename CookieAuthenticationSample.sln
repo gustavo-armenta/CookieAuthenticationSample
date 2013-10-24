@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfHost", "SelfHost\SelfHost.csproj", "{9CC34F9B-2173-4EEA-A61B-5CF6CEBA561A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F12C6886-A542-4040-B40D-BAA4E2986F75}"
@@ -14,11 +16,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpClient", "CSharpClien
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JavaScriptClient", "JavaScriptClient\JavaScriptClient.csproj", "{5390C3FC-5071-4DED-A2F0-C69B70D78D3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebHost", "WebHost\WebHost.csproj", "{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhoneClient", "PhoneClient\PhoneClient.csproj", "{6D48CBBB-E2ED-4BBC-B408-DC2CF8368BB4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsStoreCSharpClient", "WindowsStoreCSharpClient\WindowsStoreCSharpClient.csproj", "{E3BFB42E-3BEE-499C-BE37-00CFAA8B4210}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebHost", "WebHost\WebHost.csproj", "{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,16 +64,6 @@ Global
 		{5390C3FC-5071-4DED-A2F0-C69B70D78D3E}.Release|ARM.ActiveCfg = Release|Any CPU
 		{5390C3FC-5071-4DED-A2F0-C69B70D78D3E}.Release|x64.ActiveCfg = Release|Any CPU
 		{5390C3FC-5071-4DED-A2F0-C69B70D78D3E}.Release|x86.ActiveCfg = Release|Any CPU
-		{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}.Release|ARM.ActiveCfg = Release|Any CPU
-		{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}.Release|x64.ActiveCfg = Release|Any CPU
-		{6827F100-6108-4D8F-B5AC-9D03BF2FA7B8}.Release|x86.ActiveCfg = Release|Any CPU
 		{6D48CBBB-E2ED-4BBC-B408-DC2CF8368BB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6D48CBBB-E2ED-4BBC-B408-DC2CF8368BB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D48CBBB-E2ED-4BBC-B408-DC2CF8368BB4}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -116,6 +108,16 @@ Global
 		{E3BFB42E-3BEE-499C-BE37-00CFAA8B4210}.Release|x86.ActiveCfg = Release|x86
 		{E3BFB42E-3BEE-499C-BE37-00CFAA8B4210}.Release|x86.Build.0 = Release|x86
 		{E3BFB42E-3BEE-499C-BE37-00CFAA8B4210}.Release|x86.Deploy.0 = Release|x86
+		{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}.Release|ARM.ActiveCfg = Release|Any CPU
+		{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}.Release|x64.ActiveCfg = Release|Any CPU
+		{5ECA2574-A4CC-4FBF-AFED-585D76A6294B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

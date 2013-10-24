@@ -6,9 +6,9 @@ using Owin;
 [assembly: OwinStartupAttribute(typeof(WebHost.Startup))]
 namespace WebHost
 {
-    public partial class Startup 
+    public partial class Startup
     {
-        public void Configuration(IAppBuilder app) 
+        public void Configuration(IAppBuilder app)
         {
             app.UseCors(CorsOptions.AllowAll);
             ConfigureAuth(app);

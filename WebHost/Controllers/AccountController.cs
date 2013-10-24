@@ -7,7 +7,6 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using WebHost.Models;
 
@@ -16,23 +15,17 @@ namespace WebHost.Controllers
     [Authorize]
     public class AccountController : Controller
     {
-        public AccountController() 
+        public AccountController()
+            : this(new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext())))
         {
-            IdentityManager = new AuthenticationIdentityManager(new IdentityStore());
         }
 
-        public AccountController(AuthenticationIdentityManager manager)
+        public AccountController(UserManager<ApplicationUser> userManager)
         {
-            IdentityManager = manager;
+            UserManager = userManager;
         }
 
-        public AuthenticationIdentityManager IdentityManager { get; private set; }
-
-        private Microsoft.Owin.Security.IAuthenticationManager AuthenticationManager {
-            get {
-                return HttpContext.GetOwinContext().Authentication;
-            }
-        }
+        public UserManager<ApplicationUser> UserManager { get; private set; }
 
         //
         // GET: /Account/Login
@@ -53,15 +46,15 @@ namespace WebHost.Controllers
             ViewBag.ReturnUrl = returnUrl;
             if (ModelState.IsValid)
             {
-                // Validate the password
-                IdentityResult result = await IdentityManager.Authentication.CheckPasswordAndSignInAsync(AuthenticationManager, model.UserName, model.Password, model.RememberMe);
-                if (result.Success)
+                var user = await UserManager.FindAsync(model.UserName, model.Password);
+                if (user != null)
                 {
+                    await SignInAsync(user, model.RememberMe);
                     return RedirectToLocal(returnUrl);
                 }
                 else
                 {
-                    AddErrors(result);
+                    ModelState.AddModelError("", "Invalid username or password.");
                 }
             }
 
@@ -86,12 +79,11 @@ namespace WebHost.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Create a local login before signing in the user
-                var user = new User(model.UserName);
-                var result = await IdentityManager.Users.CreateLocalUserAsync(user, model.Password);
-                if (result.Success)
+                var user = new ApplicationUser() { UserName = model.UserName };
+                var result = await UserManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
                 {
-                    await IdentityManager.Authentication.SignInAsync(AuthenticationManager, user.Id, isPersistent: false);
+                    await SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Home");
                 }
                 else
@@ -110,26 +102,30 @@ namespace WebHost.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Disassociate(string loginProvider, string providerKey)
         {
-            string message = null;
-            IdentityResult result = await IdentityManager.Logins.RemoveLoginAsync(User.Identity.GetUserId(), loginProvider, providerKey);
-            if (result.Success)
+            ManageMessageId? message = null;
+            IdentityResult result = await UserManager.RemoveLoginAsync(User.Identity.GetUserId(), new UserLoginInfo(loginProvider, providerKey));
+            if (result.Succeeded)
             {
-                message = "The external login was removed.";
+                message = ManageMessageId.RemoveLoginSuccess;
             }
             else
             {
-                message = result.Errors.FirstOrDefault();
+                message = ManageMessageId.Error;
             }
-
             return RedirectToAction("Manage", new { Message = message });
         }
 
         //
         // GET: /Account/Manage
-        public async Task<ActionResult> Manage(string message)
+        public ActionResult Manage(ManageMessageId? message)
         {
-            ViewBag.StatusMessage = message ?? "";
-            ViewBag.HasLocalPassword = await IdentityManager.Logins.HasLocalLoginAsync(User.Identity.GetUserId());
+            ViewBag.StatusMessage =
+                message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
+                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
+                : message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
+                : message == ManageMessageId.Error ? "An error has occurred."
+                : "";
+            ViewBag.HasLocalPassword = HasPassword();
             ViewBag.ReturnUrl = Url.Action("Manage");
             return View();
         }
@@ -140,18 +136,17 @@ namespace WebHost.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Manage(ManageUserViewModel model)
         {
-            string userId = User.Identity.GetUserId();
-            bool hasLocalLogin = await IdentityManager.Logins.HasLocalLoginAsync(userId);
-            ViewBag.HasLocalPassword = hasLocalLogin;
+            bool hasPassword = HasPassword();
+            ViewBag.HasLocalPassword = hasPassword;
             ViewBag.ReturnUrl = Url.Action("Manage");
-            if (hasLocalLogin)
-            {               
+            if (hasPassword)
+            {
                 if (ModelState.IsValid)
                 {
-                    IdentityResult result = await IdentityManager.Passwords.ChangePasswordAsync(User.Identity.GetUserName(), model.OldPassword, model.NewPassword);
-                    if (result.Success)
+                    IdentityResult result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword, model.NewPassword);
+                    if (result.Succeeded)
                     {
-                        return RedirectToAction("Manage", new { Message = "Your password has been changed." });
+                        return RedirectToAction("Manage", new { Message = ManageMessageId.ChangePasswordSuccess });
                     }
                     else
                     {
@@ -161,7 +156,7 @@ namespace WebHost.Controllers
             }
             else
             {
-                // User does not have a local password so remove any validation errors caused by a missing OldPassword field
+                // User does not have a password so remove any validation errors caused by a missing OldPassword field
                 ModelState state = ModelState["OldPassword"];
                 if (state != null)
                 {
@@ -170,11 +165,10 @@ namespace WebHost.Controllers
 
                 if (ModelState.IsValid)
                 {
-                    // Create the local login info and link it to the user
-                    IdentityResult result = await IdentityManager.Logins.AddLocalLoginAsync(userId, User.Identity.GetUserName(), model.NewPassword);
-                    if (result.Success)
+                    IdentityResult result = await UserManager.AddPasswordAsync(User.Identity.GetUserId(), model.NewPassword);
+                    if (result.Succeeded)
                     {
-                        return RedirectToAction("Manage", new { Message = "Your password has been set." });
+                        return RedirectToAction("Manage", new { Message = ManageMessageId.SetPasswordSuccess });
                     }
                     else
                     {
@@ -195,41 +189,61 @@ namespace WebHost.Controllers
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
             // Request a redirect to the external login provider
-            return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { loginProvider = provider, ReturnUrl = returnUrl }));
+            return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
 
         //
         // GET: /Account/ExternalLoginCallback
         [AllowAnonymous]
-        public async Task<ActionResult> ExternalLoginCallback(string loginProvider, string returnUrl)
+        public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
-            ClaimsIdentity id = await IdentityManager.Authentication.GetExternalIdentityAsync(AuthenticationManager);
-            // Sign in this external identity if its already linked
-            IdentityResult result = await IdentityManager.Authentication.SignInExternalIdentityAsync(AuthenticationManager, id);
-            if (result.Success) 
+            var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
+            if (loginInfo == null)
             {
-                return RedirectToLocal(returnUrl);
+                return RedirectToAction("Login");
             }
-            else if (User.Identity.IsAuthenticated)
+
+            // Sign in the user with this external login provider if the user already has a login
+            var user = await UserManager.FindAsync(loginInfo.Login);
+            if (user != null)
             {
-                // Try to link if the user is already signed in
-                result = await IdentityManager.Authentication.LinkExternalIdentityAsync(id, User.Identity.GetUserId());
-                if (result.Success)
-                {
-                    return RedirectToLocal(returnUrl);
-                }
-                else 
-                {
-                    return View("ExternalLoginFailure");
-                }
+                await SignInAsync(user, isPersistent: false);
+                return RedirectToLocal(returnUrl);
             }
             else
             {
-                // Otherwise prompt to create a local user
+                // If the user does not have an account, then prompt the user to create an account
                 ViewBag.ReturnUrl = returnUrl;
-                ViewBag.LoginProvider = loginProvider;
-                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { UserName = id.Name });
+                ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
+                return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { UserName = loginInfo.DefaultUserName });
             }
+        }
+
+        //
+        // POST: /Account/LinkLogin
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult LinkLogin(string provider)
+        {
+            // Request a redirect to the external login provider to link a login for the current user
+            return new ChallengeResult(provider, Url.Action("LinkLoginCallback", "Account"), User.Identity.GetUserId());
+        }
+
+        //
+        // GET: /Account/LinkLoginCallback
+        public async Task<ActionResult> LinkLoginCallback()
+        {
+            var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, User.Identity.GetUserId());
+            if (loginInfo == null)
+            {
+                return RedirectToAction("Manage", new { Message = ManageMessageId.Error });
+            }
+            var result = await UserManager.AddLoginAsync(User.Identity.GetUserId(), loginInfo.Login);
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Manage");
+            }
+            return RedirectToAction("Manage", new { Message = ManageMessageId.Error });
         }
 
         //
@@ -243,19 +257,27 @@ namespace WebHost.Controllers
             {
                 return RedirectToAction("Manage");
             }
-            
+
             if (ModelState.IsValid)
             {
                 // Get the information about the user from the external login provider
-                IdentityResult result = await IdentityManager.Authentication.CreateAndSignInExternalUserAsync(AuthenticationManager, new User(model.UserName));
-                if (result.Success)
+                var info = await AuthenticationManager.GetExternalLoginInfoAsync();
+                if (info == null)
                 {
-                    return RedirectToLocal(returnUrl);
+                    return View("ExternalLoginFailure");
                 }
-                else
+                var user = new ApplicationUser() { UserName = model.UserName };
+                var result = await UserManager.CreateAsync(user);
+                if (result.Succeeded)
                 {
-                    AddErrors(result);
+                    result = await UserManager.AddLoginAsync(user.Id, info.Login);
+                    if (result.Succeeded)
+                    {
+                        await SignInAsync(user, isPersistent: false);
+                        return RedirectToLocal(returnUrl);
+                    }
                 }
+                AddErrors(result);
             }
 
             ViewBag.ReturnUrl = returnUrl;
@@ -280,38 +302,67 @@ namespace WebHost.Controllers
             return View();
         }
 
-        [AllowAnonymous]
-        [ChildActionOnly]
-        public ActionResult ExternalLoginsList(string returnUrl)
-        {
-            ViewBag.ReturnUrl = returnUrl;
-            return (ActionResult)PartialView("_ExternalLoginsListPartial", new List<AuthenticationDescription>(AuthenticationManager.GetExternalAuthenticationTypes()));
-        }
-
         [ChildActionOnly]
         public ActionResult RemoveAccountList()
         {
-            return Task.Run(async () =>
-            {
-                var linkedAccounts = new List<IUserLogin>(await IdentityManager.Logins.GetLoginsAsync(User.Identity.GetUserId()));
-                ViewBag.ShowRemoveButton = linkedAccounts.Count > 1;
-                return (ActionResult)PartialView("_RemoveAccountPartial", linkedAccounts);
-            }).Result;
+            var linkedAccounts = UserManager.GetLogins(User.Identity.GetUserId());
+            ViewBag.ShowRemoveButton = HasPassword() || linkedAccounts.Count > 1;
+            return (ActionResult)PartialView("_RemoveAccountPartial", linkedAccounts);
         }
 
-        protected override void Dispose(bool disposing) {
-            if (disposing && IdentityManager != null) {
-                IdentityManager.Dispose();
-                IdentityManager = null;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && UserManager != null)
+            {
+                UserManager.Dispose();
+                UserManager = null;
             }
             base.Dispose(disposing);
         }
 
         #region Helpers
-        private void AddErrors(IdentityResult result) {
-            foreach (var error in result.Errors) {
+        // Used for XSRF protection when adding external logins
+        private const string XsrfKey = "XsrfId";
+
+        private IAuthenticationManager AuthenticationManager
+        {
+            get
+            {
+                return HttpContext.GetOwinContext().Authentication;
+            }
+        }
+
+        private async Task SignInAsync(ApplicationUser user, bool isPersistent)
+        {
+            AuthenticationManager.SignOut(DefaultAuthenticationTypes.ExternalCookie);
+            var identity = await UserManager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
+            AuthenticationManager.SignIn(new AuthenticationProperties() { IsPersistent = isPersistent }, identity);
+        }
+
+        private void AddErrors(IdentityResult result)
+        {
+            foreach (var error in result.Errors)
+            {
                 ModelState.AddModelError("", error);
             }
+        }
+
+        private bool HasPassword()
+        {
+            var user = UserManager.FindById(User.Identity.GetUserId());
+            if (user != null)
+            {
+                return user.PasswordHash != null;
+            }
+            return false;
+        }
+
+        public enum ManageMessageId
+        {
+            ChangePasswordSuccess,
+            SetPasswordSuccess,
+            RemoveLoginSuccess,
+            Error
         }
 
         private ActionResult RedirectToLocal(string returnUrl)
@@ -328,18 +379,29 @@ namespace WebHost.Controllers
 
         private class ChallengeResult : HttpUnauthorizedResult
         {
-            public ChallengeResult(string provider, string redirectUrl)
+            public ChallengeResult(string provider, string redirectUri) : this(provider, redirectUri, null)
+            {
+            }
+
+            public ChallengeResult(string provider, string redirectUri, string userId)
             {
                 LoginProvider = provider;
-                RedirectUrl = redirectUrl;
+                RedirectUri = redirectUri;
+                UserId = userId;
             }
 
             public string LoginProvider { get; set; }
-            public string RedirectUrl { get; set; }
+            public string RedirectUri { get; set; }
+            public string UserId { get; set; }
 
             public override void ExecuteResult(ControllerContext context)
             {
-                context.HttpContext.GetOwinContext().Authentication.Challenge(new AuthenticationProperties() { RedirectUrl = RedirectUrl }, LoginProvider);
+                var properties = new AuthenticationProperties() { RedirectUri = RedirectUri };
+                if (UserId != null)
+                {
+                    properties.Dictionary[XsrfKey] = UserId;
+                }
+                context.HttpContext.GetOwinContext().Authentication.Challenge(properties, LoginProvider);
             }
         }
         #endregion

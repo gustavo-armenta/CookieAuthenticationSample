@@ -1,4 +1,4 @@
-﻿/// <reference path="jquery-1.8.2.js" />
+﻿/// <reference path="jquery-1.10.2.js" />
 
 function writeEvent(line) {
     var messages = $("#Messages");

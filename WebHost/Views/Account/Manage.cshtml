@@ -1,16 +1,14 @@
-@using WebHost.Models;
+﻿@using WebHost.Models;
 @using Microsoft.AspNet.Identity;
 @{
     ViewBag.Title = "Manage Account";
 }
 
-<hgroup>
-    <h1>@ViewBag.Title.</h1>
-</hgroup>
+<h2>@ViewBag.Title.</h2>
 
 <p class="text-success">@ViewBag.StatusMessage</p>
-<div class="row-fluid">
-    <div class="span6">
+<div class="row">
+    <div class="col-md-12">
         @if (ViewBag.HasLocalPassword)
         {
             @Html.Partial("_ChangePasswordPartial")
@@ -22,8 +20,7 @@
 
         <section id="externalLogins">
             @Html.Action("RemoveAccountList")
-
-            @Html.Action("ExternalLoginsList", new { ReturnUrl = ViewBag.ReturnUrl })
+            @Html.Partial("_ExternalLoginsListPartial", new { Action = "LinkLogin", ReturnUrl = ViewBag.ReturnUrl })
         </section>
     </div>
 </div>

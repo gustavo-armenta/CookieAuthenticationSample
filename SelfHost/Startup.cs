@@ -34,7 +34,7 @@ namespace SelfHost
             {
                 var redirectUri = context.Request.Query["ReturnUrl"];
 
-                if(context.Request.Path.Contains(options.LoginPath))
+                if(context.Request.Path.Value.Contains(options.LoginPath.Value))
                 {
                     if (context.Request.Method == "POST")
                     {
@@ -44,7 +44,7 @@ namespace SelfHost
 
                         if (!ValidateUserCredentials(userName, password))
                         {
-                            var redirect = options.LoginPath;
+                            var redirect = options.LoginPath.Value;
                             if (!String.IsNullOrEmpty(redirectUri))
                             {
                                 redirect += "?ReturnUrl=" + WebUtility.UrlEncode(redirectUri);
@@ -66,17 +66,17 @@ namespace SelfHost
                         await context.Response.WriteAsync(loginForm);
                     }
                 }
-                else if (context.Request.Path.Contains(options.LogoutPath))
+                else if (context.Request.Path.Value.Contains(options.LogoutPath.Value))
                 {
                     context.Authentication.SignOut(options.AuthenticationType);
-                    redirectUri = redirectUri ?? options.LoginPath;
+                    redirectUri = redirectUri ?? options.LoginPath.Value;
                     context.Response.Redirect(redirectUri);
                 }
                 else if (context.Request.User == null || !context.Request.User.Identity.IsAuthenticated)
                 {
-                    context.Response.Redirect(options.LoginPath);
+                    context.Response.Redirect(options.LoginPath.Value);
                 }
-                else if (context.Request.Path == "/")
+                else if (context.Request.Path.Value == "/")
                 {
                     context.Response.Redirect("/index.html");
                 }
