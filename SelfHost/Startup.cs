@@ -4,7 +4,9 @@ using System.Net;
 using System.Security.Claims;
 using Common.Connections;
 using Microsoft.Owin.Cors;
+using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.StaticFiles;
 using Owin;
 
 namespace SelfHost
@@ -18,7 +20,12 @@ namespace SelfHost
             app.UseCors(CorsOptions.AllowAll);
 
             string contentPath = Path.Combine(Environment.CurrentDirectory, @"..\..");
-            app.UseStaticFiles(contentPath);
+            var fileOptions = new StaticFileOptions
+            {
+                FileSystem = new PhysicalFileSystem(contentPath),
+            };
+
+            app.UseStaticFiles(fileOptions);
             loginForm = File.ReadAllBytes(Path.Combine(contentPath, @"Account/form.html"));
 
             var options = new CookieAuthenticationOptions()

@@ -1,4 +1,4 @@
-﻿/// <reference path="jquery.signalR-2.0.0.js" />
+﻿/// <reference path="jquery.signalR-2.0.2.js" />
 /// <reference path="common.js" />
 
 function startSignalR(baseUrl) {
