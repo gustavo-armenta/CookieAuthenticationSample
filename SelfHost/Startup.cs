@@ -25,23 +25,22 @@ namespace SelfHost
                 FileSystem = new PhysicalFileSystem(contentPath),
             };
 
-            app.UseStaticFiles(fileOptions);
             loginForm = File.ReadAllBytes(Path.Combine(contentPath, @"Account/form.html"));
 
-            var options = new CookieAuthenticationOptions()
+            var authType = CookieAuthenticationDefaults.AuthenticationType;
+            var options = new CookieAuthenticationOptions
             {
-                AuthenticationType = CookieAuthenticationDefaults.AuthenticationType,
                 LoginPath = CookieAuthenticationDefaults.LoginPath,
                 LogoutPath = CookieAuthenticationDefaults.LogoutPath,
             };
 
             app.UseCookieAuthentication(options);
-           
+
             app.Use(async (context, next) =>
             {
                 var redirectUri = context.Request.Query["ReturnUrl"];
 
-                if(context.Request.Path.Value.Contains(options.LoginPath.Value))
+                if (context.Request.Path == options.LoginPath)
                 {
                     if (context.Request.Method == "POST")
                     {
@@ -60,7 +59,7 @@ namespace SelfHost
                             context.Response.Redirect(redirect);
                         }
 
-                        var identity = new ClaimsIdentity(options.AuthenticationType);
+                        var identity = new ClaimsIdentity(authType);
                         identity.AddClaim(new Claim(ClaimTypes.Name, userName));
                         context.Authentication.SignIn(identity);
 
@@ -73,9 +72,9 @@ namespace SelfHost
                         await context.Response.WriteAsync(loginForm);
                     }
                 }
-                else if (context.Request.Path.Value.Contains(options.LogoutPath.Value))
+                else if (context.Request.Path == options.LogoutPath)
                 {
-                    context.Authentication.SignOut(options.AuthenticationType);
+                    context.Authentication.SignOut(authType);
                     redirectUri = redirectUri ?? options.LoginPath.Value;
                     context.Response.Redirect(redirectUri);
                 }
@@ -92,6 +91,8 @@ namespace SelfHost
                     await next();
                 }
             });
+
+            app.UseStaticFiles(fileOptions);
 
             app.MapSignalR<AuthorizeEchoConnection>("/echo");
             app.MapSignalR();
